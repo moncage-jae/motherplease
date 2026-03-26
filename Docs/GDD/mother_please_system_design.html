@@ -1,0 +1,2741 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MOTHER. PLEASE — 시스템 기획서</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@300;400;500;700&family=Courier+Prime:wght@400;700&display=swap');
+
+  :root {
+    --red: #C0392B;
+    --dark-red: #922B21;
+    --black: #0D0D0D;
+    --off-white: #F0EDE8;
+    --gray-100: #E8E5E0;
+    --gray-300: #B0ADA8;
+    --gray-400: #8A8785;
+    --gray-500: #6B6865;
+    --gray-600: #4A4845;
+    --gray-700: #3A3835;
+    --gray-800: #252320;
+    --gray-900: #1A1917;
+    --tbd-bg: rgba(255, 140, 0, 0.12);
+    --tbd-border: rgba(255, 140, 0, 0.5);
+    --tbd-text: #FFA040;
+    --review-bg: rgba(255, 220, 0, 0.1);
+    --review-border: rgba(255, 220, 0, 0.4);
+    --review-text: #FFD700;
+    --deprecated-text: #666360;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--black);
+    color: var(--off-white);
+    line-height: 1.7;
+    font-size: 14px;
+  }
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--black); }
+  ::-webkit-scrollbar-thumb { background: var(--red); }
+
+  /* ─── HEADER ─── */
+  .doc-header {
+    background: var(--gray-900);
+    border-bottom: 2px solid var(--red);
+    padding: 10px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 200;
+    gap: 20px;
+  }
+  .doc-title-bar {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px;
+    letter-spacing: 3px;
+    color: var(--off-white);
+    white-space: nowrap;
+  }
+  .doc-title-bar span { color: var(--red); }
+  .doc-meta {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    font-family: 'Courier Prime', monospace;
+    font-size: 11px;
+    color: var(--gray-300);
+  }
+  .version {
+    background: var(--red);
+    color: white;
+    padding: 2px 8px;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 1px;
+  }
+  .doc-nav {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  .doc-nav a {
+    color: var(--gray-500);
+    text-decoration: none;
+    font-size: 11px;
+    font-family: 'Courier Prime', monospace;
+    letter-spacing: 1px;
+    padding: 3px 8px;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .doc-nav a:hover { color: var(--red); border-color: var(--gray-700); }
+  .doc-nav a.active { color: var(--red); border-color: var(--red); }
+
+  /* ─── LAYOUT ─── */
+  .layout { display: flex; min-height: 100vh; }
+
+  .sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    background: var(--gray-900);
+    border-right: 1px solid var(--gray-700);
+    position: sticky;
+    top: 45px;
+    height: calc(100vh - 45px);
+    overflow-y: auto;
+    padding: 24px 0;
+  }
+  .sidebar::-webkit-scrollbar { width: 2px; }
+  .sidebar-title {
+    font-family: 'Courier Prime', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--gray-500);
+    padding: 0 20px 12px;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--gray-800);
+    margin-bottom: 8px;
+  }
+  .sidebar-group { margin-bottom: 4px; }
+  .sidebar-group-label {
+    font-family: 'Courier Prime', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--gray-600);
+    padding: 8px 20px 4px;
+    text-transform: uppercase;
+  }
+  .sidebar a {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 6px 20px;
+    text-decoration: none;
+    color: var(--gray-400);
+    font-size: 12px;
+    font-family: 'Noto Sans KR', sans-serif;
+    line-height: 1.4;
+    transition: all 0.15s;
+  }
+  .sidebar a:hover { color: var(--off-white); background: rgba(255,255,255,0.03); }
+  .sidebar a.current { color: var(--red); background: rgba(192,57,43,0.08); }
+  .sidebar a.stub { color: var(--gray-600); }
+  .sidebar-num {
+    font-family: 'Courier Prime', monospace;
+    font-size: 10px;
+    color: var(--red);
+    flex-shrink: 0;
+    margin-top: 1px;
+    opacity: 0.7;
+  }
+  .sidebar a.stub .sidebar-num { color: var(--gray-600); }
+
+  .main { flex: 1; min-width: 0; padding: 60px 60px 100px; max-width: 900px; }
+
+  /* ─── COVER ─── */
+  .cover {
+    padding: 60px 0 80px;
+    border-bottom: 2px solid var(--gray-700);
+    margin-bottom: 60px;
+  }
+  .cover-type {
+    font-family: 'Courier Prime', monospace;
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: var(--red);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .cover-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(48px, 6vw, 80px);
+    letter-spacing: 4px;
+    line-height: 0.9;
+    color: var(--off-white);
+    margin-bottom: 8px;
+  }
+  .cover-title span { color: var(--red); }
+  .cover-subtitle {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    letter-spacing: 6px;
+    color: var(--gray-500);
+    margin-bottom: 40px;
+  }
+  .cover-divider { width: 60px; height: 2px; background: var(--red); margin-bottom: 32px; }
+  .cover-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--gray-700);
+    border: 1px solid var(--gray-700);
+    max-width: 600px;
+  }
+  .cover-meta-item {
+    background: var(--gray-900);
+    padding: 16px 20px;
+  }
+  .cover-meta-label {
+    font-family: 'Courier Prime', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .cover-meta-value {
+    font-family: 'Courier Prime', monospace;
+    font-size: 13px;
+    color: var(--off-white);
+    font-weight: 700;
+  }
+  .cover-meta-value.red { color: var(--red); }
+
+  /* ─── WARNING BANNER ─── */
+  .warning-banner {
+    background: rgba(255, 140, 0, 0.08);
+    border: 1px solid var(--tbd-border);
+    border-left: 3px solid var(--tbd-text);
+    padding: 14px 20px;
+    margin-bottom: 40px;
+    font-family: 'Courier Prime', monospace;
+    font-size: 12px;
+    color: var(--tbd-text);
+    letter-spacing: 0.5px;
+  }
+
+  /* ─── SECTION ─── */
+  .section { margin-bottom: 80px; }
+  .section-header { margin-bottom: 40px; }
+  .section-label {
+    font-family: 'Courier Prime', monospace;
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: var(--red);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(32px, 4vw, 48px);
+    letter-spacing: 3px;
+    color: var(--off-white);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .section-title span { color: var(--red); }
+  .section-desc {
+    font-size: 13px;
+    color: var(--gray-400);
+    max-width: 600px;
+    line-height: 1.6;
+    padding-top: 12px;
+    border-top: 1px solid var(--gray-800);
+  }
+
+  /* ─── SUBSECTION ─── */
+  .subsection { margin-bottom: 48px; }
+  .subsection-title {
+    font-family: 'Courier Prime', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--off-white);
+    letter-spacing: 1px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--gray-700);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .subsection-num {
+    color: var(--red);
+    font-size: 11px;
+    font-weight: 400;
+  }
+
+  /* ─── PROSE ─── */
+  .prose { font-size: 14px; color: var(--gray-100); line-height: 1.8; }
+  .prose + .prose { margin-top: 12px; }
+  .prose strong { color: var(--off-white); font-weight: 700; }
+  .prose em { color: var(--red); font-style: normal; }
+
+  /* ─── INFO BLOCK ─── */
+  .info-block {
+    background: var(--gray-900);
+    border: 1px solid var(--gray-700);
+    padding: 24px 28px;
+    margin: 16px 0;
+  }
+  .info-block-title {
+    font-family: 'Courier Prime', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .info-row {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 0;
+    border-bottom: 1px solid var(--gray-800);
+    padding: 10px 0;
+    font-size: 13px;
+  }
+  .info-row:last-child { border-bottom: none; }
+  .info-key {
+    font-family: 'Courier Prime', monospace;
+    color: var(--gray-500);
+    font-size: 11px;
+    letter-spacing: 1px;
+    padding-right: 16px;
+    padding-top: 2px;
+  }
+  .info-val { color: var(--off-white); }
+
+  /* ─── TABLE ─── */
+  .table-wrap { overflow-x: auto; margin: 16px 0; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  thead tr { background: var(--gray-800); }
+  th {
+    text-align: left;
+    padding: 10px 14px;
+    font-family: 'Courier Prime', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--gray-400);
+    font-weight: 400;
+    border-bottom: 1px solid var(--gray-700);
+    white-space: nowrap;
+  }
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--gray-800);
+    color: var(--gray-300);
+    vertical-align: top;
+  }
+  tr:hover td { background: rgba(255,255,255,0.015); }
+  td strong { color: var(--off-white); }
+  td .tag {
+    display: inline-block;
+    font-family: 'Courier Prime', monospace;
+    font-size: 10px;
+    padding: 1px 6px;
+    letter-spacing: 1px;
+  }
+  td .tag-sys { background: rgba(192,57,43,0.15); color: var(--red); }
+  td .tag-doc { background: rgba(100,100,100,0.2); color: var(--gray-400); }
+  td .tag-plan { background: rgba(0,120,200,0.15); color: #5BA8D4; }
+
+  /* ─── STATUS CHIPS ─── */
+  .chip {
+    display: inline-block;
+    font-family: 'Courier Prime', monospace;
+    font-size: 10px;
+    padding: 2px 8px;
+    letter-spacing: 1px;
+  }
+  .chip-done { background: rgba(39,174,96,0.15); color: #58C97A; }
+  .chip-wip { background: var(--tbd-bg); color: var(--tbd-text); }
+  .chip-plan { background: rgba(100,100,100,0.15); color: var(--gray-500); }
+
+  /* ─── MARKERS ─── */
+  .tbd, .wip {
+    background: var(--tbd-bg);
+    color: var(--tbd-text);
+    font-family: 'Courier Prime', monospace;
+    font-size: 11px;
+    padding: 1px 6px;
+    border: 1px solid var(--tbd-border);
+    letter-spacing: 1px;
+  }
+  .review {
+    background: var(--review-bg);
+    color: var(--review-text);
+    font-family: 'Courier Prime', monospace;
+    font-size: 11px;
+    padding: 1px 6px;
+    border: 1px solid var(--review-border);
+  }
+  .deprecated {
+    color: var(--deprecated-text);
+    text-decoration: line-through;
+    font-family: 'Courier Prime', monospace;
+    font-size: 11px;
+    padding: 1px 6px;
+  }
+
+  /* ─── MERMAID CONTAINER ─── */
+  .diagram-wrap {
+    background: var(--gray-900);
+    border: 1px solid var(--gray-700);
+    padding: 32px 24px;
+    margin: 16px 0;
+    overflow-x: auto;
+  }
+  .diagram-caption {
+    font-family: 'Courier Prime', monospace;
+    font-size: 10px;
+    color: var(--gray-500);
+    letter-spacing: 2px;
+    text-align: center;
+    margin-top: 16px;
+    text-transform: uppercase;
+  }
+
+  /* ─── STUB SECTION ─── */
+  .stub-section {
+    padding: 48px;
+    border: 1px dashed var(--gray-700);
+    text-align: center;
+    margin-bottom: 80px;
+  }
+  .stub-section-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 48px;
+    color: var(--gray-800);
+    letter-spacing: 4px;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .stub-section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 3px;
+    color: var(--gray-700);
+  }
+  .stub-badge {
+    display: inline-block;
+    margin-top: 16px;
+    font-family: 'Courier Prime', monospace;
+    font-size: 11px;
+    color: var(--gray-600);
+    border: 1px solid var(--gray-800);
+    padding: 4px 12px;
+    letter-spacing: 2px;
+  }
+
+  /* ─── DIVIDER ─── */
+  .divider { height: 1px; background: var(--gray-800); margin: 40px 0; }
+
+  /* ─── CALLOUT ─── */
+  .callout {
+    border-left: 3px solid var(--red);
+    background: rgba(192,57,43,0.06);
+    padding: 16px 20px;
+    margin: 16px 0;
+  }
+  .callout-label {
+    font-family: 'Courier Prime', monospace;
+    font-size: 10px;
+    color: var(--red);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .callout p { font-size: 13px; color: var(--gray-300); line-height: 1.7; }
+
+  /* ─── CHANGELOG ─── */
+  .changelog { margin-top: 100px; padding-top: 40px; border-top: 2px solid var(--gray-700); }
+  .changelog-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 3px;
+    color: var(--gray-500);
+    margin-bottom: 20px;
+  }
+
+  /* ─── FOOTER ─── */
+  .footer {
+    margin-top: 60px;
+    padding: 40px 0 60px;
+    border-top: 1px solid var(--gray-800);
+    font-family: 'Courier Prime', monospace;
+    font-size: 11px;
+    color: var(--gray-600);
+    letter-spacing: 1px;
+  }
+
+  /* ─── PRINT ─── */
+  @media print {
+    .doc-header, .sidebar { display: none; }
+    .main { padding: 40px; max-width: 100%; }
+    .stub-section { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════
+     STICKY HEADER
+═══════════════════════════════════════════════ -->
+<header class="doc-header">
+  <div class="doc-title-bar">MOTHER.<span>PLEASE</span> — 시스템 기획서</div>
+  <div class="doc-meta">
+    <span class="version">v2.2</span>
+    <span class="doc-date">2026-03-15</span>
+    <span class="doc-author">쿠마마루</span>
+  </div>
+  <nav class="doc-nav">
+    <a href="#ch1">01.개요</a>
+    <a href="#ch2">02.조작</a>
+    <a href="#ch3">03.챕터구조</a>
+    <a href="#ch4">04.미니게임</a>
+    <a href="#ch5">05.피해</a>
+    <a href="#ch6">06.체크포인트</a>
+    <a href="#ch7">07.독백</a>
+    <a href="#ch8">08.연출</a>
+    <a href="#ch9">09.UI</a>
+    <a href="#ch10">10.오디오</a>
+  </nav>
+</header>
+
+<!-- ═══════════════════════════════════════════════
+     LAYOUT
+═══════════════════════════════════════════════ -->
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-title">목차 / TOC</div>
+
+    <div class="sidebar-group">
+      <div class="sidebar-group-label">v2.1 — 전체 완성</div>
+      <a href="#ch1" class="current">
+        <span class="sidebar-num">01</span>문서 개요
+      </a>
+      <a href="#ch2">
+        <span class="sidebar-num">02</span>조작 시스템
+      </a>
+      <a href="#ch3">
+        <span class="sidebar-num">03</span>챕터 구조 시스템
+      </a>
+      <a href="#ch4">
+        <span class="sidebar-num">04</span>미니게임 시스템
+      </a>
+      <a href="#ch5">
+        <span class="sidebar-num">05</span>피해 시스템
+      </a>
+      <a href="#ch6">
+        <span class="sidebar-num">06</span>체크포인트 시스템
+      </a>
+      <a href="#ch7">
+        <span class="sidebar-num">07</span>독백 시스템
+      </a>
+      <a href="#ch8">
+        <span class="sidebar-num">08</span>연출 시스템
+      </a>
+      <a href="#ch9">
+        <span class="sidebar-num">09</span>UI 시스템
+      </a>
+      <a href="#ch10">
+        <span class="sidebar-num">10</span>오디오 시스템
+      </a>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+
+    <!-- COVER -->
+    <div class="cover">
+      <div class="cover-type">Internal Development Document · 내부 개발 문서</div>
+      <div class="cover-title">MOTHER.<span>PLEASE</span></div>
+      <div class="cover-subtitle">시스템 기획서</div>
+      <div class="cover-divider"></div>
+      <div class="cover-meta-grid">
+        <div class="cover-meta-item">
+          <div class="cover-meta-label">VERSION</div>
+          <div class="cover-meta-value red">v2.2</div>
+        </div>
+        <div class="cover-meta-item">
+          <div class="cover-meta-label">DATE</div>
+          <div class="cover-meta-value">2026-03-15</div>
+        </div>
+        <div class="cover-meta-item">
+          <div class="cover-meta-label">STUDIO</div>
+          <div class="cover-meta-value">쿠마마루</div>
+        </div>
+        <div class="cover-meta-item">
+          <div class="cover-meta-label">ENGINE</div>
+          <div class="cover-meta-value">UE5</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════
+         CH 1. 문서 개요
+    ═══════════════════════════════ -->
+    <section class="section" id="ch1">
+      <div class="section-header">
+        <div class="section-label">Chapter 01</div>
+        <h2 class="section-title">문서 <span>개요</span></h2>
+        <p class="section-desc">
+          이 문서의 목적, 범위, 관련 문서, 그리고 전체 시스템 간 의존 관계를 정의합니다.
+          개발팀 내부 전용 문서이며 모든 시스템 설계의 기준점이 됩니다.
+        </p>
+      </div>
+
+      <!-- 1.1 목적 및 범위 -->
+      <div class="subsection" id="ch1-1">
+        <div class="subsection-title">
+          <span class="subsection-num">1.1</span>
+          목적 및 범위
+        </div>
+
+        <div class="info-block">
+          <div class="info-block-title">Document Info</div>
+          <div class="info-row">
+            <div class="info-key">문서 유형</div>
+            <div class="info-val">내부 시스템 기획서 (Internal System Design Document)</div>
+          </div>
+          <div class="info-row">
+            <div class="info-key">대상 독자</div>
+            <div class="info-val">강동완 (프로그래밍 · 3D), 박지민 (아트 · 이펙트)</div>
+          </div>
+          <div class="info-row">
+            <div class="info-key">작성 목적</div>
+            <div class="info-val">MOTHER. PLEASE 개발에 필요한 모든 게임 시스템의 설계 명세를 단일 문서에 정의하고, 구현 판단의 기준점을 제공</div>
+          </div>
+          <div class="info-row">
+            <div class="info-key">적용 범위</div>
+            <div class="info-val">조작 · 치료 이벤트 · 피해 · 체크포인트 · 진행 · 어머니 AI · 내러티브 · UI · 오디오 (총 9개 시스템)</div>
+          </div>
+          <div class="info-row">
+            <div class="info-key">제외 범위</div>
+            <div class="info-val">레벨 배치 · 3D 리소스 명세 · 음원 파일 목록 (별도 문서로 관리)</div>
+          </div>
+        </div>
+
+        <div class="callout">
+          <div class="callout-label">작성 원칙</div>
+          <p>
+            이 문서에 명시된 수치와 구조는 <strong style="color:var(--off-white)">개발 기준값</strong>입니다.
+            실제 구현 및 플레이 테스트 후 수치 조정이 발생할 수 있으며,
+            변경 시 문서 하단 <strong style="color:var(--off-white)">변경 이력 표</strong>에 반드시 기록합니다.
+            확정되지 않은 항목은 <span class="tbd">[TBD]</span> 또는 <span class="wip">[WIP]</span> 마커로 표시합니다.
+          </p>
+        </div>
+      </div>
+
+      <!-- 1.2 관련 문서 -->
+      <div class="subsection" id="ch1-2">
+        <div class="subsection-title">
+          <span class="subsection-num">1.2</span>
+          관련 문서 목록
+        </div>
+
+        <p class="prose" style="margin-bottom:16px;">
+          아래 문서들은 본 시스템 기획서와 연동되며, 용어·수치·설정이 상충할 경우
+          <em>작성일 기준 최신 버전을 우선</em>합니다.
+        </p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>문서명</th>
+                <th>버전</th>
+                <th>유형</th>
+                <th>상태</th>
+                <th>비고</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>게임 소개서</strong><br><span style="font-family:'Courier Prime',monospace;font-size:11px;color:var(--gray-500)">mother_please_gdd.html</span></td>
+                <td><span style="font-family:'Courier Prime',monospace;font-size:12px;">v1.2</span></td>
+                <td><span class="tag tag-doc">소개서</span></td>
+                <td><span class="chip chip-done">확정</span></td>
+                <td>개요·레퍼런스·에스테틱 기준</td>
+              </tr>
+              <tr>
+                <td><strong>시스템 기획서</strong><br><span style="font-family:'Courier Prime',monospace;font-size:11px;color:var(--gray-500)">mother_please_system_design.html</span></td>
+                <td><span style="font-family:'Courier Prime',monospace;font-size:12px;">v1.0</span></td>
+                <td><span class="tag tag-sys">시스템</span></td>
+                <td><span class="chip chip-wip">WIP</span></td>
+                <td>본 문서</td>
+              </tr>
+              <tr>
+                <td><strong>대사 데이터 CSV</strong><br><span style="font-family:'Courier Prime',monospace;font-size:11px;color:var(--gray-500)">dialogue_data.csv</span></td>
+                <td><span style="font-family:'Courier Prime',monospace;font-size:12px;color:var(--gray-600)">—</span></td>
+                <td><span class="tag tag-plan">데이터</span></td>
+                <td><span class="chip chip-plan">예정</span></td>
+                <td>내러티브 시스템 (8장) 구현 기반 데이터. 포맷 정의는 8.1 참조</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 1.3 시스템 의존성 맵 -->
+      <div class="subsection" id="ch1-3">
+        <div class="subsection-title">
+          <span class="subsection-num">1.3</span>
+          시스템 의존성 맵
+        </div>
+
+        <p class="prose" style="margin-bottom:16px;">
+          9개 시스템 간 <em>호출·참조 방향</em>을 나타냅니다.
+          화살표는 데이터 또는 이벤트가 흐르는 방향을 의미합니다.
+          의존성이 높은 <strong>조작 시스템</strong>과 <strong>치료 이벤트 시스템</strong>을 먼저 구현해야
+          하위 시스템 작업이 가능합니다.
+        </p>
+
+        <div class="diagram-wrap">
+          <div class="mermaid">
+%%{init: {
+  'theme': 'base',
+  'themeVariables': {
+    'primaryColor': '#252320',
+    'primaryTextColor': '#F0EDE8',
+    'primaryBorderColor': '#3A3835',
+    'lineColor': '#C0392B',
+    'secondaryColor': '#1A1917',
+    'tertiaryColor': '#1A1917',
+    'edgeLabelBackground': '#0D0D0D',
+    'clusterBkg': '#1A1917',
+    'titleColor': '#F0EDE8',
+    'fontFamily': 'Courier Prime, monospace'
+  }
+}}%%
+flowchart LR
+    subgraph INPUT["입력 레이어"]
+        A["🎮 조작 시스템"]
+    end
+
+    subgraph CORE["코어 레이어"]
+        B["📋 챕터 구조 시스템"]
+        C["💊 미니게임 시스템"]
+        D["🩸 피해 시스템"]
+    end
+
+    subgraph DATA["데이터 레이어"]
+        E["💾 체크포인트 시스템"]
+    end
+
+    subgraph OUTPUT["출력 레이어"]
+        F["💬 독백 시스템"]
+        G["🎬 연출 시스템"]
+        H["🖥 UI 시스템"]
+        I["🔊 오디오 시스템"]
+    end
+
+    A --> C
+    A --> D
+    B --> C
+    B --> F
+    B --> G
+    B --> E
+    C --> D
+    C --> B
+    C --> I
+    D --> H
+    F --> H
+    F --> I
+    G --> H
+    G --> I
+          </div>
+          <div class="diagram-caption">Fig 1.3 — 시스템 의존성 맵 / System Dependency Map</div>
+        </div>
+
+        <div class="table-wrap" style="margin-top:24px;">
+          <table>
+            <thead>
+              <tr>
+                <th>시스템</th>
+                <th>레이어</th>
+                <th>의존 대상 (입력)</th>
+                <th>피의존 대상 (출력)</th>
+                <th>구현 우선순위</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>조작 시스템</strong></td>
+                <td>입력</td>
+                <td>—</td>
+                <td>미니게임, 피해</td>
+                <td><span style="color:var(--red);font-weight:700;">P1 (최우선)</span></td>
+              </tr>
+              <tr>
+                <td><strong>챕터 구조 시스템</strong></td>
+                <td>코어</td>
+                <td>미니게임</td>
+                <td>미니게임, 독백, 연출, 체크포인트</td>
+                <td><span style="color:var(--red);font-weight:700;">P1 (최우선)</span></td>
+              </tr>
+              <tr>
+                <td><strong>미니게임 시스템</strong></td>
+                <td>코어</td>
+                <td>조작, 챕터 구조</td>
+                <td>피해, 챕터 구조, 오디오</td>
+                <td><span style="color:var(--red);font-weight:700;">P1 (최우선)</span></td>
+              </tr>
+              <tr>
+                <td><strong>피해 시스템</strong></td>
+                <td>코어</td>
+                <td>조작, 미니게임</td>
+                <td>UI</td>
+                <td>P2</td>
+              </tr>
+              <tr>
+                <td><strong>체크포인트 시스템</strong></td>
+                <td>데이터</td>
+                <td>챕터 구조</td>
+                <td>—</td>
+                <td>P2</td>
+              </tr>
+              <tr>
+                <td><strong>독백 시스템</strong></td>
+                <td>출력</td>
+                <td>챕터 구조</td>
+                <td>UI, 오디오</td>
+                <td>P3</td>
+              </tr>
+              <tr>
+                <td><strong>연출 시스템</strong></td>
+                <td>출력</td>
+                <td>챕터 구조</td>
+                <td>UI, 오디오</td>
+                <td>P3</td>
+              </tr>
+              <tr>
+                <td><strong>UI 시스템</strong></td>
+                <td>출력</td>
+                <td>피해, 독백, 연출</td>
+                <td>—</td>
+                <td>P3</td>
+              </tr>
+              <tr>
+                <td><strong>오디오 시스템</strong></td>
+                <td>출력</td>
+                <td>미니게임, 독백, 연출</td>
+                <td>—</td>
+                <td>P3</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════
+         CH 2~10 — STUBS
+    ═══════════════════════════════ -->
+    <!-- ═══════════════════════════════
+         CH 2. 조작 시스템
+    ═══════════════════════════════ -->
+    <section class="section" id="ch2">
+      <div class="section-header">
+        <div class="section-label">Chapter 02</div>
+        <h2 class="section-title">조작 <span>시스템</span></h2>
+        <p class="section-desc">
+          플레이어가 게임과 상호작용하는 유일한 수단을 정의합니다.
+          모든 입력은 왼손 하나의 움직임으로만 처리되며, 이 제약 자체가 게임의 핵심 공포 메커닉입니다.
+        </p>
+      </div>
+
+      <!-- 2.1 설계 원칙 -->
+      <div class="subsection" id="ch2-1">
+        <div class="subsection-title">
+          <span class="subsection-num">2.1</span>
+          설계 원칙 — 왼손 단일 조작
+        </div>
+
+        <div class="callout">
+          <div class="callout-label">핵심 원칙</div>
+          <p>
+            플레이어는 <strong style="color:var(--off-white)">사지마비 환자</strong>입니다.
+            왼손을 제외한 모든 신체 부위는 조작 불가입니다.
+            이 조작 제약은 UX 한계가 아닌 <strong style="color:var(--off-white)">의도된 무력감 연출</strong>입니다.
+            어떠한 이유로도 이동 속도를 "편의상" 높이거나 추가 입력 수단을 허용해서는 안 됩니다.
+          </p>
+        </div>
+
+        <div style="height:16px;"></div>
+
+        <div class="info-block">
+          <div class="info-block-title">조작 개요</div>
+          <div class="info-row">
+            <div class="info-key">입력 수단</div>
+            <div class="info-val">방향키(이동) + 마우스 휠(상호작용) — 2종 고정</div>
+          </div>
+          <div class="info-row">
+            <div class="info-key">조작 대상</div>
+            <div class="info-val">왼팔 전체 (상완 → 전완 → 손목 → 손가락 순으로 물리 연산)</div>
+          </div>
+          <div class="info-row">
+            <div class="info-key">조작 속도</div>
+            <div class="info-val">모든 입력에 극한의 지연 적용 — 체감 기준 <strong style="color:var(--off-white)">10초에 1cm</strong> 수준</div>
+          </div>
+          <div class="info-row">
+            <div class="info-key">속도 변화</div>
+            <div class="info-val">게임 전 구간 동일 — 이벤트·긴장 상황에서도 속도 보정 없음</div>
+          </div>
+          <div class="info-row">
+            <div class="info-key">레퍼런스</div>
+            <div class="info-val">The Longing (2020) — 실시간 경과 기반 극저속 조작 방식</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2.2 방향키 — 팔 이동 -->
+      <div class="subsection" id="ch2-2">
+        <div class="subsection-title">
+          <span class="subsection-num">2.2</span>
+          방향키 입력 — 팔 이동
+        </div>
+
+        <p class="prose">
+          방향키 4방향 입력으로 왼팔 전체를 전후좌우로 이동시킵니다.
+          입력은 <em>연속 누름(Hold)</em> 방식으로만 동작하며, 탭 입력은 무시합니다.
+        </p>
+
+        <div style="height:20px;"></div>
+
+        <!-- 이동 다이어그램 -->
+        <div class="diagram-wrap">
+          <div class="mermaid">
+%%{init: {'theme': 'base','themeVariables': {'primaryColor': '#252320','primaryTextColor': '#F0EDE8','primaryBorderColor': '#3A3835','lineColor': '#C0392B','fontFamily': 'Courier Prime, monospace'}}}%%
+stateDiagram-v2
+    direction LR
+    [*] --> IDLE : 입력 없음
+    IDLE --> MOVING : 방향키 Hold
+    MOVING --> MOVING : 계속 Hold (속도 유지)
+    MOVING --> DECELERATING : 키 Release
+    DECELERATING --> IDLE : 감속 완료
+    MOVING --> BOUNDARY : 이동 범위 도달
+    BOUNDARY --> IDLE : 키 Release
+          </div>
+          <div class="diagram-caption">Fig 2.2 — 팔 이동 상태 머신 / Arm Movement State Machine</div>
+        </div>
+
+        <div style="height:20px;"></div>
+
+        <!-- 2.2.1 이동 속도 파라미터 -->
+        <div style="font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:3px;color:var(--gray-500);margin-bottom:12px;text-transform:uppercase;">2.2.1 — 이동 속도 파라미터</div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>파라미터</th>
+                <th>값</th>
+                <th>단위</th>
+                <th>설명</th>
+                <th>비고</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">ArmMoveSpeed</code></td>
+                <td><strong>0.1</strong></td>
+                <td>cm/s</td>
+                <td>팔의 기본 이동 속도</td>
+                <td>10초에 1cm 체감 기준값</td>
+              </tr>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">AccelerationTime</code></td>
+                <td><strong>0.0</strong></td>
+                <td>s</td>
+                <td>최대 속도 도달까지 걸리는 시간</td>
+                <td>가속 없음, 입력 즉시 최대 속도</td>
+              </tr>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">DecelerationTime</code></td>
+                <td><strong>0.8</strong></td>
+                <td>s</td>
+                <td>키 Release 후 완전 정지까지 걸리는 시간</td>
+                <td>관성 느낌으로 서서히 멈춤 <span class="review">[검토필요]</span></td>
+              </tr>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">InputMinHoldTime</code></td>
+                <td><strong>0.1</strong></td>
+                <td>s</td>
+                <td>이동으로 인정되는 최소 Hold 시간</td>
+                <td>탭 입력 무시 기준</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div style="height:24px;"></div>
+
+        <!-- 2.2.2 이동 범위 제한 -->
+        <div style="font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:3px;color:var(--gray-500);margin-bottom:12px;text-transform:uppercase;">2.2.2 — 이동 범위 제한</div>
+
+        <p class="prose" style="margin-bottom:16px;">
+          팔은 침대 위 플레이어 몸을 중심으로 정의된 <em>허용 박스(Allow Box)</em> 내부에서만 이동 가능합니다.
+          범위 밖으로 이동 시도 시 이동이 멈춥니다.
+        </p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>방향</th>
+                <th>이동 가능 범위</th>
+                <th>기준점</th>
+                <th>비고</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>좌 / 우</td>
+                <td><span class="tbd">[TBD]</span></td>
+                <td>몸 중심축 기준</td>
+                <td>레벨 배치 확정 후 결정</td>
+              </tr>
+              <tr>
+                <td>앞 / 뒤</td>
+                <td><span class="tbd">[TBD]</span></td>
+                <td>몸 중심축 기준</td>
+                <td>레벨 배치 확정 후 결정</td>
+              </tr>
+              <tr>
+                <td>위</td>
+                <td>팔 들어올리기 불가</td>
+                <td>—</td>
+                <td>사지마비 설정 — 수평 이동만 허용</td>
+              </tr>
+              <tr>
+                <td>아래</td>
+                <td>침대 표면 고정</td>
+                <td>침대 콜리전</td>
+                <td>침대 아래로 통과 불가</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 2.3 마우스 휠 — 오브젝트 상호작용 -->
+      <div class="subsection" id="ch2-3">
+        <div class="subsection-title">
+          <span class="subsection-num">2.3</span>
+          마우스 휠 입력 — 오브젝트 상호작용
+        </div>
+
+        <p class="prose">
+          손 아래 오브젝트에 <em>접촉 중</em>일 때 마우스 휠 스크롤로 해당 오브젝트를 조작합니다.
+          스크롤 방향에 따라 오브젝트 동작이 결정됩니다 (당기기 / 밀기 / 돌리기 등).
+        </p>
+
+        <div style="height:20px;"></div>
+
+        <!-- 상호작용 흐름 다이어그램 -->
+        <div class="diagram-wrap">
+          <div class="mermaid">
+%%{init: {'theme': 'base','themeVariables': {'primaryColor': '#252320','primaryTextColor': '#F0EDE8','primaryBorderColor': '#3A3835','lineColor': '#C0392B','fontFamily': 'Courier Prime, monospace'}}}%%
+flowchart TD
+    A["손 위치 업데이트"] --> B{"접촉 중인\n오브젝트 있음?"}
+    B -- "없음" --> C["휠 입력 무시"]
+    B -- "있음" --> D{"오브젝트\n상호작용 가능?"}
+    D -- "불가" --> E["하이라이트 없음\n(상호작용 불가 피드백)"]
+    D -- "가능" --> F["오브젝트 하이라이트\n(상호작용 가능 표시)"]
+    F --> G{"마우스 휠\n입력?"}
+    G -- "없음" --> F
+    G -- "Up 스크롤" --> H["오브젝트 ActionA 실행"]
+    G -- "Down 스크롤" --> I["오브젝트 ActionB 실행"]
+    H --> J["결과 처리\n(이벤트 트리거 / 피드백)"]
+    I --> J
+          </div>
+          <div class="diagram-caption">Fig 2.3 — 오브젝트 상호작용 흐름 / Object Interaction Flow</div>
+        </div>
+
+        <div style="height:20px;"></div>
+
+        <!-- 2.3.1 감지 범위 및 우선순위 -->
+        <div style="font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:3px;color:var(--gray-500);margin-bottom:12px;text-transform:uppercase;">2.3.1 — 감지 범위 및 우선순위</div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>파라미터</th>
+                <th>값</th>
+                <th>단위</th>
+                <th>설명</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">InteractDetectRadius</code></td>
+                <td><span class="tbd">[TBD]</span></td>
+                <td>cm (UE)</td>
+                <td>손 콜리전 중심에서 오브젝트 감지 반경 — <em>침대 모델링 완성 후 결정</em></td>
+              </tr>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">MultipleObjectPriority</code></td>
+                <td><strong>거리순</strong></td>
+                <td>—</td>
+                <td>감지 범위 내 오브젝트 2개 이상 시 손과 가장 가까운 오브젝트 우선</td>
+              </tr>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">HighlightMaterial</code></td>
+                <td><strong>VRToonShader</strong></td>
+                <td>—</td>
+                <td>상호작용 가능 오브젝트 외곽선 강조 머티리얼 — 구매 에셋 사용 (VRToonShader)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div style="height:24px;"></div>
+
+        <!-- 2.3.2 스크롤 방향 규칙 -->
+        <div style="font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:3px;color:var(--gray-500);margin-bottom:12px;text-transform:uppercase;">2.3.2 — 스크롤 방향 규칙</div>
+
+        <p class="prose" style="margin-bottom:16px;">
+          스크롤 방향의 의미는 오브젝트 타입별로 다르게 정의됩니다.
+          모든 오브젝트는 아래 타입 중 하나에 속하며, 기획서에서 타입을 명시합니다.
+        </p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>오브젝트 타입</th>
+                <th>Up 스크롤</th>
+                <th>Down 스크롤</th>
+                <th>사용 예시</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>PULL_PUSH</strong></td>
+                <td>당기기 (플레이어 방향)</td>
+                <td>밀기 (반대 방향)</td>
+                <td>코드 뽑기, 문 열기</td>
+              </tr>
+              <tr>
+                <td><strong>ROTATE</strong></td>
+                <td>시계 방향 회전</td>
+                <td>반시계 방향 회전</td>
+                <td>다이얼, 비밀번호 자물쇠</td>
+              </tr>
+              <tr>
+                <td><strong>PRESS</strong></td>
+                <td>누르기</td>
+                <td>—  (무시)</td>
+                <td>버튼, 벨</td>
+              </tr>
+              <tr>
+                <td><strong>WAVE</strong></td>
+                <td>손 들기</td>
+                <td>손 내리기</td>
+                <td>생존 신호 (치료 03)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 2.4 입력 예외 처리 -->
+      <div class="subsection" id="ch2-4">
+        <div class="subsection-title">
+          <span class="subsection-num">2.4</span>
+          입력 예외 처리
+        </div>
+
+        <p class="prose" style="margin-bottom:16px;">
+          아래 상황에서는 입력을 무시하거나 강제로 중단합니다.
+          예외 처리는 게임 연출의 일부이므로 에러가 아닌 <em>정상 동작</em>으로 구현합니다.
+        </p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>상황</th>
+                <th>처리 방식</th>
+                <th>복귀 조건</th>
+                <th>비고</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>컷신 / 내러티브 연출 재생 중</td>
+                <td>모든 입력 잠금 (Lock)</td>
+                <td>연출 종료 시 자동 해제</td>
+                <td>어머니 등장·대사 구간</td>
+              </tr>
+              <tr>
+                <td>치료 이벤트 시작 직후 (인트로 재생)</td>
+                <td>이동 입력 잠금, 휠 허용</td>
+                <td>인트로 종료 시</td>
+                <td>이벤트별 인트로 길이는 3장 정의</td>
+              </tr>
+              <tr>
+                <td>피해 임계 도달 (기절 연출)</td>
+                <td>모든 입력 잠금</td>
+                <td>기절 연출 종료 시</td>
+                <td>피해 시스템(4장)과 연동</td>
+              </tr>
+              <tr>
+                <td>이동 범위 도달</td>
+                <td>해당 방향 이동 차단, 나머지 방향은 유지</td>
+                <td>반대 방향 입력 시</td>
+                <td>소프트 바운더리 처리</td>
+              </tr>
+              <tr>
+                <td>방향키 + 휠 동시 입력</td>
+                <td>둘 다 처리 (독립 채널)</td>
+                <td>—</td>
+                <td>이동 중에도 오브젝트 조작 가능</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════
+         CH 3. 챕터 구조 시스템
+    ═══════════════════════════════ -->
+    <section class="section" id="ch3">
+      <div class="section-header">
+        <div class="section-label">Chapter 03</div>
+        <h2 class="section-title">챕터 <span>구조 시스템</span></h2>
+        <p class="section-desc">
+          게임 전체 진행의 뼈대를 정의합니다. 치료 1종이 챕터 1개에 대응하며,
+          모든 챕터는 독백 → 미니게임 → 연출의 고정 순서로 실행됩니다.
+          이 구조는 예외 없이 적용됩니다.
+        </p>
+      </div>
+
+      <!-- 3.1 챕터 목록 -->
+      <div class="subsection" id="ch3-1">
+        <div class="subsection-title">
+          <span class="subsection-num">3.1</span>
+          챕터 목록
+        </div>
+
+        <p class="prose" style="margin-bottom:16px;">
+          게임은 오프닝, 본편 챕터 4개, 엔딩의 선형 구조로 구성됩니다.
+          본편 챕터는 각각 치료 이벤트 1종에 대응합니다.
+        </p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>순서</th>
+                <th>챕터 ID</th>
+                <th>챕터명</th>
+                <th>치료 타입</th>
+                <th>비고</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>0</td>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">CH_OPENING</code></td>
+                <td><strong>오프닝</strong></td>
+                <td>—</td>
+                <td>미니게임 없음. 상황 설명 및 조작 튜토리얼</td>
+              </tr>
+              <tr>
+                <td>1</td>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">CH_01</code></td>
+                <td><strong>전기 치료</strong></td>
+                <td>타임어택</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>2</td>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">CH_02</code></td>
+                <td><strong>거머리 치료</strong></td>
+                <td>QTE</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>3</td>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">CH_03</code></td>
+                <td><strong>생존 신호</strong></td>
+                <td>상호작용</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>4</td>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">CH_04</code></td>
+                <td><strong>탈출 시도</strong></td>
+                <td>퍼즐</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>5</td>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">CH_ENDING</code></td>
+                <td><strong>엔딩</strong></td>
+                <td>—</td>
+                <td>미니게임 없음. <span class="tbd">[TBD]</span> 엔딩 내용 미확정</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout" style="margin-top:16px;">
+          <div class="callout-label">추가 챕터</div>
+          <p>추가 치료 이벤트가 확정될 경우 CH_05 이후로 순번 삽입합니다. 엔딩 챕터는 항상 마지막 순서를 유지합니다. <span class="wip">[WIP]</span></p>
+        </div>
+      </div>
+
+      <!-- 3.2 챕터 내부 구성 -->
+      <div class="subsection" id="ch3-2">
+        <div class="subsection-title">
+          <span class="subsection-num">3.2</span>
+          챕터 내부 구성
+        </div>
+        <div class="callout">
+          <div class="callout-label">구성 미확정</div>
+          <p>각 챕터의 내부 구성(독백·미니게임·연출의 순서 및 조합)은 <strong style="color:var(--off-white)">시나리오 완성 후 확정</strong>합니다. 고정 순서를 강제하지 않으며, 시나리오에 따라 챕터마다 다르게 구성될 수 있습니다.</p>
+          <p style="margin-top:8px;">미니게임은 고정 순서가 아닌 <strong style="color:var(--off-white)">트리거(Flag) 기반</strong>으로 실행됩니다. 어떤 연출이나 이벤트 뒤에도 트리거를 붙여 미니게임을 기동할 수 있어 구성 자유도를 보장합니다. 자세한 내용은 <a href="#ch4-1" style="color:var(--red);">4.1 공통 구조</a>를 참조하세요.</p>
+        </div>
+      </div>
+
+      <!-- 3.3 챕터 생명주기 -->
+      <div class="subsection" id="ch3-3">
+        <div class="subsection-title">
+          <span class="subsection-num">3.3</span>
+          챕터 생명주기
+        </div>
+
+        <p class="prose" style="margin-bottom:8px;">
+          챕터 매니저가 관리하는 상태 전이입니다. 챕터 내부의 세부 실행 순서는 시나리오 확정 전이므로 <span class="wip">[WIP]</span> 상태이며, 현재는 뼈대 구조만 정의합니다.
+        </p>
+
+        <div class="diagram-wrap">
+          <div class="mermaid">
+%%{init: {'theme': 'base','themeVariables': {'primaryColor': '#252320','primaryTextColor': '#F0EDE8','primaryBorderColor': '#3A3835','lineColor': '#C0392B','fontFamily': 'Courier Prime, monospace'}}}%%
+stateDiagram-v2
+    [*] --> LOADING : 챕터 로드 시작
+    LOADING --> CHECKPOINT_WRITE : 로드 완료
+    CHECKPOINT_WRITE --> READY : 저장 완료
+    READY --> RUNNING : 챕터 내부 시퀀스 시작\n(트리거 대기 포함)
+    RUNNING --> CHECKPOINT_READ : 미니게임 실패
+    CHECKPOINT_READ --> READY : 복귀 완료
+    RUNNING --> TRANSITION : 챕터 종료 조건 달성
+    TRANSITION --> [*] : 다음 챕터 or 엔딩
+          </div>
+          <div class="diagram-caption">Fig 3.3 — 챕터 생명주기 (뼈대) / Chapter Lifecycle — WIP</div>
+        </div>
+
+        <div style="height:16px;"></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>상태</th><th>설명</th><th>진입 조건</th><th>이탈 조건</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">LOADING</code></td>
+                <td>씬·에셋 로드</td>
+                <td>이전 챕터 TRANSITION 완료</td>
+                <td>로드 완료</td>
+              </tr>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">CHECKPOINT_WRITE</code></td>
+                <td>현재 챕터 ID 저장</td>
+                <td>LOADING 완료</td>
+                <td>저장 완료 (즉시)</td>
+              </tr>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">READY</code></td>
+                <td>챕터 시작 준비 완료 · 페이드 인</td>
+                <td>CHECKPOINT_WRITE 완료 또는 CHECKPOINT_READ 완료</td>
+                <td>내부 시퀀스 시작</td>
+              </tr>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">RUNNING</code></td>
+                <td>챕터 내부 시퀀스 진행 중 <span class="wip">[WIP]</span></td>
+                <td>READY 완료</td>
+                <td>미니게임 실패 또는 챕터 종료 조건 달성</td>
+              </tr>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">CHECKPOINT_READ</code></td>
+                <td>저장된 챕터 시작점으로 복귀</td>
+                <td>RUNNING 중 미니게임 실패</td>
+                <td>복귀 완료</td>
+              </tr>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">TRANSITION</code></td>
+                <td>챕터 전환 연출 재생</td>
+                <td>챕터 종료 조건 달성</td>
+                <td>전환 연출 완료</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 3.4 챕터 전환 연출 -->
+      <div class="subsection" id="ch3-4">
+        <div class="subsection-title">
+          <span class="subsection-num">3.4</span>
+          챕터 전환 연출 및 저장
+        </div>
+
+        <p class="prose" style="margin-bottom:16px;">
+          챕터 간 전환은 아래 순서로 진행합니다. 전환은 게임 전체에서 총 5회 발생하므로 별도 파라미터화 없이 챕터별로 직접 설정합니다.
+        </p>
+
+        <div style="display:flex;flex-direction:column;gap:2px;margin-bottom:24px;">
+          <div style="display:flex;align-items:center;gap:16px;padding:14px 20px;background:var(--gray-800);border-left:3px solid var(--red);">
+            <span style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--red);opacity:0.6;line-height:1;flex-shrink:0;width:24px;">1</span>
+            <div>
+              <div style="font-family:'Courier Prime',monospace;font-size:12px;color:var(--off-white);letter-spacing:1px;">페이드 아웃</div>
+              <div style="font-size:12px;color:var(--gray-400);margin-top:2px;">화면이 검은색으로 서서히 사라짐. 동시에 체크포인트 저장(CHECKPOINT_WRITE) 실행.</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:16px;padding:14px 20px;background:var(--gray-800);border-left:3px solid var(--red);">
+            <span style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--red);opacity:0.6;line-height:1;flex-shrink:0;width:24px;">2</span>
+            <div>
+              <div style="font-family:'Courier Prime',monospace;font-size:12px;color:var(--off-white);letter-spacing:1px;">챕터명 스프라이트 표시</div>
+              <div style="font-size:12px;color:var(--gray-400);margin-top:2px;">검은 화면 위에 다음 챕터 이름이 표시됨. 표시 시간은 챕터마다 개별 설정.</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:16px;padding:14px 20px;background:var(--gray-800);border-left:3px solid var(--red);">
+            <span style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--red);opacity:0.6;line-height:1;flex-shrink:0;width:24px;">3</span>
+            <div>
+              <div style="font-family:'Courier Prime',monospace;font-size:12px;color:var(--off-white);letter-spacing:1px;">페이드 인</div>
+              <div style="font-size:12px;color:var(--gray-400);margin-top:2px;">다음 챕터 씬이 서서히 나타남. 씬 로드 완료 후 진행.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>항목</th><th>내용</th><th>비고</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><strong>저장 타이밍</strong></td>
+                <td>페이드 아웃 시작과 동시에 <code style="font-family:'Courier Prime',monospace;font-size:12px;">current_chapter_id</code> 저장</td>
+                <td>6장 체크포인트 시스템 참조</td>
+              </tr>
+              <tr>
+                <td><strong>챕터 순서</strong></td>
+                <td>OPENING → CH_01 → CH_02 → CH_03 → CH_04 → ENDING (런타임 변경 불가)</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td><strong>실패 복귀</strong></td>
+                <td>미니게임 실패 시 전환 연출 없이 현재 챕터 READY 상태로 즉시 복귀</td>
+                <td>챕터명 스프라이트 표시 없음</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ═══════════════════════════════
+         CH 4. 미니게임 시스템
+    ═══════════════════════════════ -->
+    <section class="section" id="ch4">
+      <div class="section-header">
+        <div class="section-label">Chapter 04</div>
+        <h2 class="section-title">미니게임 <span>시스템</span></h2>
+        <p class="section-desc">
+          치료 4종의 개별 미니게임을 정의합니다. 공통 구조를 먼저 명세한 뒤,
+          각 치료를 독립 섹션으로 기술합니다. 모든 미니게임은 2장의 조작 시스템(방향키·마우스 휠)만으로 플레이합니다.
+        </p>
+      </div>
+
+      <!-- 4.1 공통 구조 -->
+      <div class="subsection" id="ch4-1">
+        <div class="subsection-title"><span class="subsection-num">4.1</span>공통 구조</div>
+
+        <div style="font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:3px;color:var(--gray-500);margin-bottom:12px;text-transform:uppercase;">4.1.1 — 미니게임 기동 방식</div>
+        <p class="prose" style="margin-bottom:16px;">미니게임은 <strong>트리거(Flag) 기반</strong>으로 기동됩니다. 챕터 내 어떤 시점에서든 지정된 트리거가 발동되면 미니게임이 시작됩니다. 고정 순서를 전제하지 않으므로, 독백 뒤, 연출 뒤 등 시나리오에 따라 자유롭게 배치 가능합니다.</p>
+
+        <div class="diagram-wrap">
+          <div class="mermaid">
+%%{init: {'theme': 'base','themeVariables': {'primaryColor': '#252320','primaryTextColor': '#F0EDE8','primaryBorderColor': '#3A3835','lineColor': '#C0392B','fontFamily': 'Courier Prime, monospace'}}}%%
+stateDiagram-v2
+    direction LR
+    [*] --> WAITING : 트리거 대기\n(Flag = false)
+    WAITING --> ACTIVE : 트리거 발동 (Flag → true)
+    ACTIVE --> SUCCESS : 성공 조건 달성
+    ACTIVE --> DAMAGED : 피해 발생
+    DAMAGED --> ACTIVE : 위독 미달 — 진행 유지
+    DAMAGED --> FAIL : 위독 도달
+    SUCCESS --> [*] : Flag 초기화 (false)\n챕터 RUNNING 복귀
+    FAIL --> [*] : Flag 초기화 (false)\n챕터 CHECKPOINT_READ 전환
+          </div>
+          <div class="diagram-caption">Fig 4.1 — 미니게임 공통 생명주기 (트리거 기반)</div>
+        </div>
+
+        <div style="height:20px;"></div>
+        <div style="font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:3px;color:var(--gray-500);margin-bottom:12px;text-transform:uppercase;">4.1.2 — Flag 초기화 규칙</div>
+
+        <div class="callout">
+          <div class="callout-label">⚠️ 초기화 누락 시 발생하는 문제</div>
+          <p>Flag가 초기화되지 않으면, <strong style="color:var(--off-white)">불러오기(챕터 재플레이)</strong>로 챕터에 재진입 시 Flag가 이미 <code style="font-family:'Courier Prime',monospace;font-size:12px;">true</code> 상태로 남아 있어 미니게임이 기동되지 않습니다. 성공·실패 양쪽 모두에서 반드시 초기화해야 합니다.</p>
+        </div>
+
+        <div style="height:16px;"></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>초기화 시점</th><th>Flag 상태 변화</th><th>이유</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><strong>챕터 CHECKPOINT_WRITE</strong><br><span style="font-size:11px;color:var(--gray-500);">챕터 최초 진입 시</span></td>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">true → false</code></td>
+                <td>새 챕터 시작 시 항상 초기 상태 보장</td>
+              </tr>
+              <tr>
+                <td><strong>미니게임 SUCCESS</strong></td>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">true → false</code></td>
+                <td>성공 후 다음 시퀀스로 이행. 동일 챕터 재진입 시 재기동 가능.</td>
+              </tr>
+              <tr>
+                <td><strong>미니게임 FAIL → CHECKPOINT_READ</strong></td>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">true → false</code></td>
+                <td>챕터 재시작 시 트리거가 다시 발동될 수 있도록 초기화</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div style="height:20px;"></div>
+        <div style="font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:3px;color:var(--gray-500);margin-bottom:12px;text-transform:uppercase;">4.1.3 — 성공 / 실패 판정 규칙</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>판정</th><th>조건</th><th>처리</th></tr></thead>
+            <tbody>
+              <tr><td><strong style="color:#58C97A;">성공</strong></td><td>각 치료별 목표 동작 완수</td><td>챕터 RUNNING 상태로 복귀 → 다음 시퀀스 진행</td></tr>
+              <tr><td><strong style="color:var(--red);">실패</strong></td><td>피해 단계 위독(<a href="#ch5-2" style="color:var(--red);">CRITICAL</a>) 도달</td><td>챕터 → CHECKPOINT_READ 전환</td></tr>
+              <tr><td><strong style="color:var(--gray-400);">진행 중 피해</strong></td><td>피해 발생하되 위독 미달</td><td><a href="#ch5" style="color:var(--red);">피해 누적</a> 후 ACTIVE 유지 — 미니게임 계속 진행</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 4.2 전기 치료 -->
+      <div class="subsection" id="ch4-2">
+        <div class="subsection-title"><span class="subsection-num">4.2</span>치료 01 — 전기 치료 <span style="font-size:11px;font-family:'Courier Prime',monospace;color:var(--gray-500);font-weight:400;margin-left:8px;">타임어택</span> <span class="review" style="margin-left:8px;">가안</span></div>
+
+        <div class="info-block">
+          <div class="info-block-title">개요</div>
+          <div class="info-row"><div class="info-key">상황</div><div class="info-val">어머니가 적외선 전열기구를 켜놓고 방을 나간다. 방치된 열기구로 인해 화상으로 사망하기 전에 코드를 뽑아야 한다.</div></div>
+          <div class="info-row"><div class="info-key">목표</div><div class="info-val">제한 시간 내에 전열기구 전원 코드를 소켓에서 뽑기</div></div>
+          <div class="info-row"><div class="info-key">조작</div><div class="info-val">방향키로 손을 코드 방향으로 이동 → 코드 접촉 후 마우스 휠 Up (PULL_PUSH)</div></div>
+          <div class="info-row"><div class="info-key">피해 유형</div><div class="info-val">화상 — 시간 경과에 따라 점진적으로 <a href="#ch5-2" style="color:var(--red);">화상 단계</a> 상승</div></div>
+        </div>
+
+        <div style="height:16px;"></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>파라미터</th><th>값</th><th>설명</th><th>비고</th></tr></thead>
+            <tbody>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:12px;">TimeLimit</code></td><td><span class="tbd">[TBD]</span></td><td>코드를 뽑아야 하는 제한 시간</td><td>플레이 테스트 후 결정</td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:12px;">DamageInterval</code></td><td><span class="tbd">[TBD]</span></td><td>피해 단계가 1씩 오르는 주기 (초)</td><td><a href="#ch5-4" style="color:var(--red);">5.4 피해 데이터 테이블</a> 연동</td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:12px;">CordPullDistance</code></td><td><span class="tbd">[TBD]</span></td><td>코드가 완전히 뽑히기 위한 휠 스크롤 거리</td><td>UE 단위. 침대 모델링 확정 후 결정</td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:12px;">SuccessCondition</code></td><td><strong>코드 완전 이탈</strong></td><td>코드가 소켓에서 완전히 빠진 상태</td><td></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 4.3 거머리 치료 -->
+      <div class="subsection" id="ch4-3">
+        <div class="subsection-title"><span class="subsection-num">4.3</span>치료 02 — 거머리 치료 <span style="font-size:11px;font-family:'Courier Prime',monospace;color:var(--gray-500);font-weight:400;margin-left:8px;">QTE</span> <span class="review" style="margin-left:8px;">가안</span></div>
+
+        <div class="info-block">
+          <div class="info-block-title">개요</div>
+          <div class="info-row"><div class="info-key">상황</div><div class="info-val">거머리가 팔에 붙어 플레이어 카메라(눈)를 향해 기어온다. Arrow Key Error의 바퀴벌레 연출과 유사한 카메라 접근 공포 연출이 메인입니다. 과다출혈로 사망하기 전에 거머리를 떼어내야 합니다.</div></div>
+          <div class="info-row"><div class="info-key">목표</div><div class="info-val">카메라까지 기어오는 거머리를 방향키와 마우스 휠로 떼어내기 — 전체 거머리 제거 시 성공</div></div>
+          <div class="info-row"><div class="info-key">조작</div><div class="info-val">방향키 + 마우스 휠 조합으로 거머리 위치에 손을 맞추고 떼어내기 (PULL_PUSH)</div></div>
+          <div class="info-row"><div class="info-key">피해 유형</div><div class="info-val">흡혈 — 거머리가 부착된 시간에 비례하여 <a href="#ch5-2" style="color:var(--red);">피해 단계</a> 누적</div></div>
+        </div>
+
+        <div style="height:16px;"></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>파라미터</th><th>값</th><th>설명</th><th>비고</th></tr></thead>
+            <tbody>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:12px;">LeechCount</code></td><td><span class="tbd">[TBD]</span></td><td>처리해야 하는 거머리 총 수</td><td></td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:12px;">LeechCrawlTime</code></td><td><span class="tbd">[TBD]</span></td><td>거머리가 팔에서 카메라까지 기어오는 데 걸리는 시간</td><td>느린 접근으로 공포 연출</td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:12px;">AttachDamageInterval</code></td><td><span class="tbd">[TBD]</span></td><td>거머리 부착 중 피해 누적 주기 (초)</td><td><a href="#ch5-4" style="color:var(--red);">5.4 피해 데이터 테이블</a> 연동</td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:12px;">SuccessCondition</code></td><td><strong>전체 거머리 제거</strong></td><td>LeechCount 개 모두 제거 완료</td><td></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 4.4 생존 신호 -->
+      <div class="subsection" id="ch4-4">
+        <div class="subsection-title"><span class="subsection-num">4.4</span>치료 03 — 생존 신호 <span style="font-size:11px;font-family:'Courier Prime',monospace;color:var(--gray-500);font-weight:400;margin-left:8px;">상호작용</span> <span class="review" style="margin-left:8px;">가안</span></div>
+
+        <div class="info-block">
+          <div class="info-block-title">개요</div>
+          <div class="info-row"><div class="info-key">상황</div><div class="info-val">어머니가 반응이 없는 환자를 보며 불안해한다. 살아있음을 증명하지 못하면 더 극단적인 치료를 시작한다.</div></div>
+          <div class="info-row"><div class="info-key">목표</div><div class="info-val">제한 시간 내에 손을 일정 높이까지 들어올려 어머니에게 보여주기</div></div>
+          <div class="info-row"><div class="info-key">조작</div><div class="info-val">마우스 휠 Up 연속 입력 (WAVE) — 손이 목표 높이에 도달하면 성공</div></div>
+          <div class="info-row"><div class="info-key">피해 유형</div><div class="info-val">공포 압박 — 시간 초과 시 어머니가 더 강도 높은 행동을 하여 <a href="#ch5-2" style="color:var(--red);">피해 단계</a> 누적</div></div>
+        </div>
+
+        <div style="height:16px;"></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>파라미터</th><th>값</th><th>설명</th><th>비고</th></tr></thead>
+            <tbody>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:12px;">TargetWaveHeight</code></td><td><span class="tbd">[TBD]</span></td><td>손이 도달해야 하는 목표 높이</td><td>UE 단위. 2.2.2 수직 이동 제한 예외 적용</td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:12px;">TimeLimit</code></td><td><span class="tbd">[TBD]</span></td><td>손을 들어야 하는 제한 시간</td><td></td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:12px;">WaveScrollPerCm</code></td><td><span class="tbd">[TBD]</span></td><td>휠 스크롤 1단위당 손 상승 거리</td><td>느린 상승 유지</td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:12px;">DamageInterval</code></td><td><span class="tbd">[TBD]</span></td><td>시간 초과 후 피해 누적 주기 (초)</td><td><a href="#ch5-4" style="color:var(--red);">5.4 피해 데이터 테이블</a> 연동</td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:12px;">SuccessCondition</code></td><td><strong>TargetWaveHeight 도달</strong></td><td>손이 목표 높이 이상에 있는 상태</td><td></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout" style="margin-top:12px;">
+          <div class="callout-label">조작 예외</div>
+          <p>이 미니게임에서만 <strong style="color:var(--off-white)">수직 이동이 허용</strong>됩니다. <a href="#ch2-2" style="color:var(--red);">2.2.2</a>의 위쪽 이동 불가 규칙의 유일한 예외입니다. 미니게임 종료 시 손 높이는 원래 위치로 복귀합니다.</p>
+        </div>
+      </div>
+
+      <!-- 4.5 탈출 시도 -->
+      <div class="subsection" id="ch4-5">
+        <div class="subsection-title"><span class="subsection-num">4.5</span>치료 04 — 탈출 시도 <span style="font-size:11px;font-family:'Courier Prime',monospace;color:var(--gray-500);font-weight:400;margin-left:8px;">퍼즐</span> <span class="review" style="margin-left:8px;">가안</span></div>
+
+        <div class="info-block">
+          <div class="info-block-title">개요</div>
+          <div class="info-row"><div class="info-key">상황</div><div class="info-val">어머니가 잠든 틈에 다이얼 전화기로 도움을 요청하려 한다. 전화할 번호를 알아내고 조용히 연결해야 한다.</div></div>
+          <div class="info-row"><div class="info-key">목표</div><div class="info-val">도움을 요청할 번호를 알아내어 다이얼 전화기로 연결하기. 번호를 알아내는 구체적인 방식은 <span class="wip">[WIP]</span> 시나리오 작성 후 확정.</div></div>
+          <div class="info-row"><div class="info-key">조작</div><div class="info-val">방향키로 손을 다이얼에 이동 → 마우스 휠로 다이얼 회전 (ROTATE)</div></div>
+          <div class="info-row"><div class="info-key">피해 유형</div><div class="info-val">각성 — 소음 발생 또는 시간 초과 시 어머니가 깨어나 <a href="#ch5-2" style="color:var(--red);">피해 단계</a> 누적</div></div>
+        </div>
+
+        <div style="height:16px;"></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>파라미터</th><th>값</th><th>설명</th><th>비고</th></tr></thead>
+            <tbody>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:12px;">TargetNumber</code></td><td><span class="tbd">[TBD]</span></td><td>입력해야 하는 전화번호</td><td>시나리오 확정 후 결정</td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:12px;">RotateScrollPerStep</code></td><td><span class="tbd">[TBD]</span></td><td>다이얼 1단계 이동에 필요한 휠 스크롤 수</td><td>느린 조작 유지</td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:12px;">NoiseThreshold</code></td><td><span class="tbd">[TBD]</span></td><td>소음 발생 판정 기준 (빠른 스크롤 속도 감지)</td><td>과도한 스크롤 시 어머니 각성</td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:12px;">DamageInterval</code></td><td><span class="tbd">[TBD]</span></td><td>각성 후 피해 누적 주기 (초)</td><td><a href="#ch5-4" style="color:var(--red);">5.4 피해 데이터 테이블</a> 연동</td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:12px;">SuccessCondition</code></td><td><strong>번호 완전 입력 및 연결</strong></td><td>목표 번호 다이얼 완료 + 연결음 확인</td><td></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 4.6 추가 치료 -->
+      <div class="subsection" id="ch4-6">
+        <div class="subsection-title"><span class="subsection-num">4.6</span>추가 치료 이벤트 <span class="wip" style="margin-left:8px;">[WIP]</span></div>
+        <div class="callout">
+          <div class="callout-label">미확정</div>
+          <p>추가 치료 이벤트 종류 및 수량 미확정 상태입니다. 확정 시 4.6 이후 순번으로 삽입합니다. 오브젝트 타입(PULL_PUSH / ROTATE / PRESS / WAVE)으로 커버되지 않는 조작이 필요할 경우 2장 2.3.2에 타입을 추가합니다.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════
+         CH 5. 피해 시스템
+    ═══════════════════════════════ -->
+    <section class="section" id="ch5">
+      <div class="section-header">
+        <div class="section-label">Chapter 05</div>
+        <h2 class="section-title">피해 <span>시스템</span></h2>
+        <p class="section-desc">
+          즉사 없이 점진적으로 피해가 누적되는 구조를 정의합니다.
+          피해 자체가 공포 연출의 일부이므로, 피드백은 시각·음향 모두 천천히 강해지는 방식으로 설계합니다.
+        </p>
+      </div>
+
+      <!-- 5.1 설계 원칙 -->
+      <div class="subsection" id="ch5-1">
+        <div class="subsection-title"><span class="subsection-num">5.1</span>설계 원칙</div>
+        <div class="callout">
+          <div class="callout-label">핵심 원칙</div>
+          <p>피해는 <strong style="color:var(--off-white)">순간적인 게임오버가 아닌 단계적 악화</strong>로 표현합니다. 피해 단계가 오를수록 화면과 음향이 서서히 무너지며, 위독 단계에 도달했을 때만 챕터가 초기화됩니다. 이 과정 자체가 무력감을 전달하는 연출입니다.</p>
+        </div>
+      </div>
+
+      <!-- 5.2 피해 단계 -->
+      <div class="subsection" id="ch5-2">
+        <div class="subsection-title"><span class="subsection-num">5.2</span>피해 단계 정의</div>
+        <p class="prose" style="margin-bottom:16px;">피해는 4단계로 구분됩니다. 챕터 시작 시 항상 <strong>정상</strong>으로 초기화됩니다.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>단계</th><th>단계 ID</th><th>상태</th><th>시각 피드백</th><th>음향 피드백</th><th>조작 영향</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><strong>0</strong></td>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">NORMAL</code></td>
+                <td>정상</td>
+                <td>없음</td>
+                <td>없음</td>
+                <td>없음</td>
+              </tr>
+              <tr>
+                <td><strong>1</strong></td>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">MINOR</code></td>
+                <td>경상</td>
+                <td>화면 가장자리 붉은 비네팅 (약)</td>
+                <td>숨 가쁜 소리 (약)</td>
+                <td>없음</td>
+              </tr>
+              <tr>
+                <td><strong>2</strong></td>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">SERIOUS</code></td>
+                <td>중상</td>
+                <td>비네팅 (강) + 화면 채도 감소</td>
+                <td>신음 + 심박수 SFX</td>
+                <td>없음 — 조작 속도는 유지</td>
+              </tr>
+              <tr>
+                <td><strong>3</strong></td>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">CRITICAL</code></td>
+                <td>위독</td>
+                <td>화면 전체 붉은 틴트 + 흑백화 + 흔들림</td>
+                <td>심박 불규칙 + 이명</td>
+                <td>챕터 초기화 (실패 처리)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 5.3 피해 누적 규칙 -->
+      <div class="subsection" id="ch5-3">
+        <div class="subsection-title"><span class="subsection-num">5.3</span>피해 누적 규칙</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>규칙</th><th>내용</th><th>비고</th></tr></thead>
+            <tbody>
+              <tr><td><strong>누적 방향</strong></td><td>단방향 상승 — 피해는 올라가기만 하고 회복되지 않음</td><td>미니게임 내 회복 수단 없음</td></tr>
+              <tr><td><strong>초기화 시점</strong></td><td>미니게임 종료(성공 또는 실패) 시 NORMAL로 리셋</td><td>미니게임 내에서만 피해 유효. 미니게임 간 이월 없음</td></tr>
+              <tr><td><strong>단계 상승</strong></td><td>각 치료의 DamageInterval마다 1단계씩 상승</td><td><a href="#ch5-4" style="color:var(--red);">5.4 피해 데이터 테이블</a> 참조</td></tr>
+              <tr><td><strong>CRITICAL 도달</strong></td><td>즉시 미니게임 FAIL 처리 → 챕터 CHECKPOINT_READ 전환</td><td><a href="#ch4-1" style="color:var(--red);">4.1 공통 구조</a> 연동</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 5.4 피해 데이터 테이블 -->
+      <div class="subsection" id="ch5-4">
+        <div class="subsection-title"><span class="subsection-num">5.4</span>피해 데이터 테이블</div>
+        <p class="prose" style="margin-bottom:16px;">치료별 피해 유형과 DamageInterval입니다. 난이도 순서: 전기치료 = 흡혈 &lt; 공포압박 &lt; 각성. 수치는 플레이 테스트 후 조정합니다.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>챕터</th><th>치료명</th><th>피해 유형</th><th>DamageInterval</th><th>비고</th></tr></thead>
+            <tbody>
+              <tr><td>CH_01</td><td>전기 치료</td><td>화상</td><td><strong>20s</strong></td><td>난이도 ★☆☆☆</td></tr>
+              <tr><td>CH_02</td><td>거머리 치료</td><td>흡혈</td><td><strong>20s</strong></td><td>난이도 ★☆☆☆ — 거머리 부착 중에만 카운트</td></tr>
+              <tr><td>CH_03</td><td>생존 신호</td><td>공포 압박</td><td><strong>15s</strong></td><td>난이도 ★★☆☆ — 시간 초과 시 발동</td></tr>
+              <tr><td>CH_04</td><td>탈출 시도</td><td>각성</td><td><strong>12s</strong></td><td>난이도 ★★★☆ — 소음 감지 또는 시간 초과 시</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════
+         CH 6. 체크포인트 시스템
+    ═══════════════════════════════ -->
+    <section class="section" id="ch6">
+      <div class="section-header">
+        <div class="section-label">Chapter 06</div>
+        <h2 class="section-title">체크포인트 <span>시스템</span></h2>
+        <p class="section-desc">
+          챕터 단위 자동 저장 및 복귀를 처리합니다.
+          선형 구조이므로 저장 데이터는 최소한으로 유지합니다.
+        </p>
+      </div>
+
+      <!-- 6.1 저장 방식 -->
+      <div class="subsection" id="ch6-1">
+        <div class="subsection-title"><span class="subsection-num">6.1</span>저장 방식</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>항목</th><th>내용</th><th>비고</th></tr></thead>
+            <tbody>
+              <tr><td><strong>저장 트리거</strong></td><td>챕터 LOADING 완료 직후 자동 저장 (3장 CHECKPOINT_WRITE)</td><td>수동 저장 없음</td></tr>
+              <tr><td><strong>저장 단위</strong></td><td>챕터 1개</td><td>씬 내 위치·오브젝트 상태 저장하지 않음</td></tr>
+              <tr><td><strong>저장 파일</strong></td><td>로컬 단일 파일 — 슬롯 1개 고정</td><td>다중 세이브 슬롯 없음</td></tr>
+              <tr><td><strong>복귀 시점</strong></td><td>미니게임 FAIL 발생 시 — 해당 챕터 처음부터 재시작</td><td>챕터 내 구성 첫 번째 요소부터 재생</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 6.2 저장 데이터 항목 -->
+      <div class="subsection" id="ch6-2">
+        <div class="subsection-title"><span class="subsection-num">6.2</span>저장 데이터 항목</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>필드</th><th>타입</th><th>설명</th><th>예시</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">current_chapter_id</code></td>
+                <td>string</td>
+                <td>현재 진행 중인 챕터 ID</td>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:11px;color:var(--gray-400);">CH_02</code></td>
+              </tr>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">last_saved_at</code></td>
+                <td>datetime</td>
+                <td>마지막 저장 시각</td>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:11px;color:var(--gray-400);">2027-02-01T14:23:00</code></td>
+              </tr>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">total_playtime</code></td>
+                <td>float</td>
+                <td>누적 플레이 시간 (초) — 스타트 화면 및 엔딩 트로피 표시용</td>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:11px;color:var(--gray-400);">3720.5</code></td>
+              </tr>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">completed_chapters</code></td>
+                <td>string[]</td>
+                <td>클리어한 챕터 ID 목록 — 불러오기 기능에서 재플레이 가능 챕터 표시에 사용</td>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:11px;color:var(--gray-400);">["CH_OPENING","CH_01"]</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout" style="margin-top:12px;">
+          <div class="callout-label">플레이타임 저장 이유</div>
+          <p>MOTHER. PLEASE는 극도로 느린 조작과 <strong style="color:var(--off-white)">매우 긴 플레이타임</strong>을 지향합니다. 누적된 플레이 시간을 스타트 화면에 표시하여 플레이어에게 긴 시간을 견딘 것에 대한 <strong style="color:var(--off-white)">트로피</strong>처럼 제공합니다.</p>
+        </div>
+      </div>
+
+      <!-- 6.3 챕터 불러오기 -->
+      <div class="subsection" id="ch6-3">
+        <div class="subsection-title"><span class="subsection-num">6.3</span>챕터 불러오기 (재플레이)</div>
+        <p class="prose" style="margin-bottom:16px;">스타트 화면의 <strong>이어하기</strong> 메뉴에서 클리어한 챕터를 개별 재플레이할 수 있습니다. 상세 UI 구성은 <a href="#ch9" style="color:var(--red);">9장 UI 시스템</a>을 참조하세요.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>항목</th><th>내용</th><th>비고</th></tr></thead>
+            <tbody>
+              <tr><td><strong>접근 경로</strong></td><td>스타트 화면 → 이어하기 → 챕터 선택</td><td></td></tr>
+              <tr><td><strong>표시 조건</strong></td><td><code style="font-family:'Courier Prime',monospace;font-size:12px;">completed_chapters</code>에 포함된 챕터만 선택 가능</td><td>미클리어 챕터는 잠금 표시</td></tr>
+              <tr><td><strong>재플레이 시 저장</strong></td><td>재플레이 중 <code style="font-family:'Courier Prime',monospace;font-size:12px;">current_chapter_id</code> 덮어쓰지 않음</td><td>진행 상황 보호</td></tr>
+              <tr><td><strong>플레이타임 누적</strong></td><td>재플레이 시간도 <code style="font-family:'Courier Prime',monospace;font-size:12px;">total_playtime</code>에 누적</td><td></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 6.4 로드 시 복원 범위 -->
+      <div class="subsection" id="ch6-4">
+        <div class="subsection-title"><span class="subsection-num">6.4</span>로드 시 복원 범위</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>데이터</th><th>복원 여부</th><th>이유</th></tr></thead>
+            <tbody>
+              <tr><td>챕터 ID</td><td><span style="color:#58C97A;font-weight:700;">복원</span></td><td>해당 챕터 씬으로 이동</td></tr>
+              <tr><td>클리어 챕터 목록</td><td><span style="color:#58C97A;font-weight:700;">복원</span></td><td>불러오기 기능 잠금 해제 기준</td></tr>
+              <tr><td>누적 플레이 시간</td><td><span style="color:#58C97A;font-weight:700;">복원</span></td><td>스타트 화면·엔딩 트로피 표시용</td></tr>
+              <tr><td>피해 단계</td><td><span style="color:var(--gray-500);">미복원</span></td><td>미니게임 종료 시 항상 NORMAL 초기화</td></tr>
+              <tr><td>손(팔) 위치</td><td><span style="color:var(--gray-500);">미복원</span></td><td>챕터 시작 위치로 고정</td></tr>
+              <tr><td>오브젝트 상태</td><td><span style="color:var(--gray-500);">미복원</span></td><td>씬 초기 배치로 리셋</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════
+         CH 7. 독백 시스템
+    ═══════════════════════════════ -->
+    <section class="section" id="ch7">
+      <div class="section-header">
+        <div class="section-label">Chapter 07</div>
+        <h2 class="section-title">독백 <span>시스템</span></h2>
+        <p class="section-desc">
+          플레이어 캐릭터의 내면을 텍스트로 출력하는 시스템입니다.
+          CSV 파일을 런타임에 로드하여 챕터 트리거에 맞춰 화면에 표시합니다.
+        </p>
+      </div>
+
+      <!-- 7.1 설계 원칙 -->
+      <div class="subsection" id="ch7-1">
+        <div class="subsection-title"><span class="subsection-num">7.1</span>설계 원칙</div>
+        <div class="info-block">
+          <div class="info-block-title">독백 표현 방침</div>
+          <div class="info-row"><div class="info-key">시점</div><div class="info-val">1인칭 — 플레이어 = 사지마비 환자 본인. 화자 표시 없음.</div></div>
+          <div class="info-row"><div class="info-key">출력 위치</div><div class="info-val">화면 하단 중앙. 배경 없이 텍스트만 표시. 폰트 및 크기 상세는 <a href="#ch9-2" style="color:var(--red);">9.2 독백 텍스트 UI</a> 참조.</div></div>
+          <div class="info-row"><div class="info-key">텍스트 범위</div><div class="info-val">1920×1080 기준 가로 전체의 <strong>0.8 비율</strong>을 텍스트 영역으로 사용. 초과 시 자동 줄바꿈 적용. 시각적 완성도 유지를 위해 화면 끝까지 늘어지는 텍스트 금지.</div></div>
+          <div class="info-row"><div class="info-key">출력 방식</div><div class="info-val">타이핑 효과 — 글자가 천천히 나타나며, 게임 전체 톤에 맞춰 느리게 설정</div></div>
+          <div class="info-row"><div class="info-key">조작 상태</div><div class="info-val">독백 출력 중 <strong>조작 잠금 없음</strong> — 어차피 느린 조작으로 효과 미비. 독백과 이동이 동시에 진행됩니다.</div></div>
+        </div>
+        <div class="callout" style="margin-top:16px;">
+          <div class="callout-label">UE5 구현 레퍼런스</div>
+          <p>UMG + Data Table 기반 타이핑 효과 대화 시스템 구현 레퍼런스: <a href="https://www.youtube.com/watch?v=lfGCadCqQSk" target="_blank" style="color:var(--red);">https://www.youtube.com/watch?v=lfGCadCqQSk</a></p>
+        </div>
+      </div>
+
+      <!-- 7.2 트리거 네이밍 규칙 -->
+      <div class="subsection" id="ch7-2">
+        <div class="subsection-title"><span class="subsection-num">7.2</span>트리거 네이밍 규칙</div>
+
+        <p class="prose" style="margin-bottom:16px;">
+          <code style="font-family:'Courier Prime',monospace;font-size:13px;">dialogue_data.csv</code>의 <code style="font-family:'Courier Prime',monospace;font-size:13px;">trigger</code> 컬럼, 미니게임 Flag ID, 연출 시퀀서 이벤트 등 게임 전체에서 사용하는 트리거 ID는 아래 규칙을 따릅니다. 규칙을 지키지 않으면 챕터 간 ID 충돌 또는 누락이 발생할 수 있습니다.
+        </p>
+
+        <div style="font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:3px;color:var(--gray-500);margin-bottom:12px;text-transform:uppercase;">7.2.1 — 기본 구조</div>
+
+        <div style="background:var(--gray-900);border:1px solid var(--gray-700);padding:24px 28px;margin-bottom:20px;font-family:'Courier Prime',monospace;">
+          <div style="font-size:11px;color:var(--gray-500);letter-spacing:2px;margin-bottom:12px;text-transform:uppercase;">Format</div>
+          <div style="font-size:18px;color:var(--off-white);letter-spacing:2px;">
+            <span style="color:var(--red);">[SCOPE]</span>_<span style="color:#5BA8D4;">[CHAPTER]</span>_<span style="color:#58C97A;">[ACTION]</span>
+          </div>
+          <div style="margin-top:20px;display:flex;gap:32px;flex-wrap:wrap;">
+            <div>
+              <div style="font-size:10px;color:var(--red);letter-spacing:2px;margin-bottom:4px;">SCOPE</div>
+              <div style="font-size:12px;color:var(--gray-300);">트리거가 속한 시스템</div>
+            </div>
+            <div>
+              <div style="font-size:10px;color:#5BA8D4;letter-spacing:2px;margin-bottom:4px;">CHAPTER</div>
+              <div style="font-size:12px;color:var(--gray-300);">발생 챕터 ID</div>
+            </div>
+            <div>
+              <div style="font-size:10px;color:#58C97A;letter-spacing:2px;margin-bottom:4px;">ACTION</div>
+              <div style="font-size:12px;color:var(--gray-300);">발동 조건 또는 동작</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:3px;color:var(--gray-500);margin-bottom:12px;text-transform:uppercase;">7.2.2 — SCOPE 목록</div>
+        <div class="table-wrap" style="margin-bottom:20px;">
+          <table>
+            <thead><tr><th>SCOPE</th><th>의미</th><th>사용 시스템</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">DLG</code></td>
+                <td>독백 출력 트리거</td>
+                <td>독백 시스템 (7장) — dialogue_data.csv trigger 컬럼</td>
+              </tr>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">MG</code></td>
+                <td>미니게임 기동 Flag</td>
+                <td>미니게임 시스템 (4장) — UE Blueprint Flag</td>
+              </tr>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">DIR</code></td>
+                <td>연출 시퀀스 기동 트리거</td>
+                <td>연출 시스템 (8장) — Sequencer Event Track</td>
+              </tr>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">CH</code></td>
+                <td>챕터 레벨 이벤트</td>
+                <td>챕터 구조 시스템 (3장) — 챕터 상태 전이</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div style="font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:3px;color:var(--gray-500);margin-bottom:12px;text-transform:uppercase;">7.2.3 — ACTION 작성 규칙</div>
+        <div class="table-wrap" style="margin-bottom:20px;">
+          <table>
+            <thead><tr><th>규칙</th><th>내용</th><th>예시 (올바름)</th><th>예시 (잘못됨)</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><strong>대문자 스네이크케이스</strong></td>
+                <td>모든 단어 대문자, 단어 사이 언더스코어(_)</td>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:11px;color:#58C97A;">START</code></td>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:11px;color:var(--red);">start / Start</code></td>
+              </tr>
+              <tr>
+                <td><strong>동사 또는 동사+명사</strong></td>
+                <td>발동 시점이나 동작을 명확하게 서술</td>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:11px;color:#58C97A;">START / END / TRIGGER_MINIGAME</code></td>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:11px;color:var(--red);">EVENT1 / A / 독백시작</code></td>
+              </tr>
+              <tr>
+                <td><strong>약어 금지</strong></td>
+                <td>축약 없이 의미가 명확한 단어 사용</td>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:11px;color:#58C97A;">MONOLOGUE_START</code></td>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:11px;color:var(--red);">MONO_S / ML_ST</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div style="font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:3px;color:var(--gray-500);margin-bottom:12px;text-transform:uppercase;">7.2.4 — 네이밍 예시</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>트리거 ID</th><th>의미</th><th>사용처</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">DLG_CH01_MONOLOGUE_START</code></td>
+                <td>CH_01 챕터 독백 시작 시 출력할 대사</td>
+                <td>dialogue_data.csv trigger 컬럼</td>
+              </tr>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">DLG_CH02_DURING_MINIGAME</code></td>
+                <td>CH_02 미니게임 진행 중 출력 대사</td>
+                <td>dialogue_data.csv trigger 컬럼</td>
+              </tr>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">MG_CH01_TRIGGER_MINIGAME</code></td>
+                <td>CH_01 미니게임 기동 Flag</td>
+                <td>UE Blueprint — 연출/독백 Event Track에서 호출</td>
+              </tr>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">DIR_CH02_ENTER</code></td>
+                <td>CH_02 어머니 등장 연출 기동</td>
+                <td>Sequencer Event Track</td>
+              </tr>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">CH_OPENING_START</code></td>
+                <td>오프닝 챕터 시작 이벤트</td>
+                <td>챕터 구조 시스템 상태 전이</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 7.3 CSV 데이터 구조 -->
+      <div class="subsection" id="ch7-3">
+        <div class="subsection-title"><span class="subsection-num">7.3</span>CSV 데이터 구조</div>
+        <p class="prose" style="margin-bottom:16px;">대사 데이터는 <code style="font-family:'Courier Prime',monospace;font-size:13px;">dialogue_data.csv</code>로 관리합니다. 스크립트 수정 시 재빌드 없이 파일만 교체합니다. <code style="font-family:'Courier Prime',monospace;font-size:13px;">trigger</code> 컬럼은 반드시 <a href="#ch7-2" style="color:var(--red);">7.2 네이밍 규칙</a>을 따릅니다.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>컬럼</th><th>타입</th><th>필수</th><th>설명</th><th>예시</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">id</code></td>
+                <td>string</td><td>✓</td>
+                <td>대사 고유 ID</td>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:11px;color:var(--gray-400);">DLG_CH01_001</code></td>
+              </tr>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">chapter</code></td>
+                <td>string</td><td>✓</td>
+                <td>소속 챕터 ID</td>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:11px;color:var(--gray-400);">CH_01</code></td>
+              </tr>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">trigger</code></td>
+                <td>string</td><td>✓</td>
+                <td>출력 트리거 이벤트 ID (3장 챕터 상태 기준)</td>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:11px;color:var(--gray-400);">CH_01_MONOLOGUE_START</code></td>
+              </tr>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">order</code></td>
+                <td>int</td><td>✓</td>
+                <td>동일 트리거 내 출력 순서</td>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:11px;color:var(--gray-400);">1</code></td>
+              </tr>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">text_kr</code></td>
+                <td>string</td><td>✓</td>
+                <td>한국어 독백 텍스트</td>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:11px;color:var(--gray-400);">또 오는구나…</code></td>
+              </tr>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">text_en</code></td>
+                <td>string</td><td></td>
+                <td>영어 텍스트 (현지화)</td>
+                <td><span class="tbd">[TBD]</span></td>
+              </tr>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">text_jp</code></td>
+                <td>string</td><td></td>
+                <td>일본어 텍스트 (현지화)</td>
+                <td><span class="tbd">[TBD]</span></td>
+              </tr>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">display_time</code></td>
+                <td>float</td><td></td>
+                <td>텍스트 화면 유지 시간(초). 미입력 시 기본값 적용</td>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:11px;color:var(--gray-400);">3.0</code></td>
+              </tr>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">audio_id</code></td>
+                <td>string</td><td></td>
+                <td>연동 보이스 에셋 ID. 미입력 시 텍스트만 출력</td>
+                <td><span class="tbd">[TBD]</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 7.4 출력 파라미터 -->
+      <div class="subsection" id="ch7-4">
+        <div class="subsection-title"><span class="subsection-num">7.4</span>출력 파라미터</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>파라미터</th><th>값</th><th>설명</th><th>비고</th></tr></thead>
+            <tbody>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:12px;">TypewriterSpeed</code></td><td><span class="tbd">[TBD]</span></td><td>타이핑 효과 글자 출력 속도 (글자/초)</td><td>느린 톤에 맞게 조정</td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:12px;">DefaultDisplayTime</code></td><td><strong>3.0s</strong></td><td>display_time 미입력 시 기본 유지 시간</td><td><span class="review">[검토필요]</span></td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:12px;">FadeInTime</code></td><td><strong>0.3s</strong></td><td>텍스트 등장 페이드 인 시간</td><td></td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:12px;">FadeOutTime</code></td><td><strong>0.5s</strong></td><td>텍스트 사라짐 페이드 아웃 시간</td><td></td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:12px;">DefaultLanguage</code></td><td><strong>KR</strong></td><td>기본 표시 언어</td><td>스팀 언어 설정 연동 <span class="tbd">[TBD]</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════
+         CH 8. 연출 시스템
+    ═══════════════════════════════ -->
+    <section class="section" id="ch8">
+      <div class="section-header">
+        <div class="section-label">Chapter 08</div>
+        <h2 class="section-title">연출 <span>시스템</span></h2>
+        <p class="section-desc">
+          어머니 캐릭터의 애니메이션·카메라·이펙트를 챕터별 스크립트로 재생합니다.
+          AI 판단 없이 사전 정의된 시퀀스를 순서대로 실행합니다.
+        </p>
+      </div>
+
+      <!-- 8.1 설계 원칙 -->
+      <div class="subsection" id="ch8-1">
+        <div class="subsection-title"><span class="subsection-num">8.1</span>설계 원칙</div>
+        <div class="callout">
+          <div class="callout-label">핵심 원칙</div>
+          <p>어머니는 <strong style="color:var(--off-white)">스크립트 기반 연출 객체</strong>입니다. 런타임 판단이나 플레이어 반응에 따른 분기 없이, 챕터에 할당된 연출 시퀀스를 처음부터 끝까지 재생합니다. 연출 중에는 플레이어 입력이 전면 잠금됩니다.</p>
+        </div>
+      </div>
+
+      <!-- 8.2 연출 시퀀스 구조 -->
+      <div class="subsection" id="ch8-2">
+        <div class="subsection-title"><span class="subsection-num">8.2</span>연출 시퀀스 구조</div>
+        <p class="prose" style="margin-bottom:16px;">각 챕터의 연출은 아래 구성요소의 조합으로 정의합니다. UE5 Sequencer를 활용해 타임라인으로 편집합니다. 챕터별 상세 연출 내용은 <strong>시나리오 완성 후 별도 작성</strong>합니다.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>구성요소</th><th>설명</th><th>UE5 구현</th></tr></thead>
+            <tbody>
+              <tr><td><strong>어머니 애니메이션</strong></td><td>등장·행동·퇴장 모션</td><td>Skeletal Mesh + Animation Sequence</td></tr>
+              <tr><td><strong>카메라 컷</strong></td><td>시점 전환 및 연출 앵글</td><td>Cine Camera Actor + Cut Track</td></tr>
+              <tr><td><strong>오디오 트리거</strong></td><td>연출 중 BGM 전환 및 SFX 재생</td><td>Audio Track (<a href="#ch10" style="color:var(--red);">10장</a> 연동)</td></tr>
+              <tr><td><strong>독백 트리거</strong></td><td>연출 도중 플레이어 독백 삽입 가능</td><td>Event Track → <a href="#ch7" style="color:var(--red);">7장 독백 시스템</a> 호출</td></tr>
+              <tr><td><strong>미니게임 트리거</strong></td><td>연출 특정 시점에 미니게임 기동</td><td>Event Track → <a href="#ch4-1" style="color:var(--red);">4.1 트리거 기반 기동</a></td></tr>
+              <tr><td><strong>이펙트</strong></td><td>조명 변화, 파티클</td><td>Particle System Track / Light Track</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 8.3 연출 공통 파라미터 -->
+      <div class="subsection" id="ch8-3">
+        <div class="subsection-title"><span class="subsection-num">8.3</span>연출 공통 파라미터</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>파라미터</th><th>값</th><th>설명</th><th>비고</th></tr></thead>
+            <tbody>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:12px;">InputLockDuring</code></td><td><strong>true</strong></td><td>연출 재생 중 전체 입력 잠금</td><td>예외 없음. 스킵 없음.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════
+         CH 9. UI 시스템
+    ═══════════════════════════════ -->
+    <section class="section" id="ch9">
+      <div class="section-header">
+        <div class="section-label">Chapter 09</div>
+        <h2 class="section-title">UI <span>시스템</span></h2>
+        <p class="section-desc">
+          게임 전체 UI 구성을 정의합니다. HUD 최소화 원칙에 따라 화면 요소를 최대한 배제하고,
+          필요한 정보는 게임플레이 내 시각 연출로 전달합니다. 기준 해상도: 1920×1080.
+        </p>
+      </div>
+
+      <!-- 9.1 HUD 설계 방침 -->
+      <div class="subsection" id="ch9-1">
+        <div class="subsection-title"><span class="subsection-num">9.1</span>HUD 설계 방침</div>
+        <div class="callout">
+          <div class="callout-label">최소화 원칙</div>
+          <p>체력바·타이머·아이콘 등 <strong style="color:var(--off-white)">일체의 게임 UI를 배제</strong>합니다. 피해 상태는 화면 이펙트로, 시간 압박은 어머니 애니메이션과 오디오로 전달합니다. UI가 없는 것 자체가 무력감 연출의 일부입니다.</p>
+        </div>
+        <div style="height:16px;"></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>UI 요소</th><th>포함 여부</th><th>대체 수단</th></tr></thead>
+            <tbody>
+              <tr><td>체력바 / 피해 수치</td><td><span style="color:var(--red);">❌ 없음</span></td><td>화면 비네팅·채도 변화 (<a href="#ch5-2" style="color:var(--red);">5.2 피해 단계</a>)</td></tr>
+              <tr><td>타이머 / 카운트다운</td><td><span style="color:var(--red);">❌ 없음</span></td><td>BGM 템포 변화·어머니 애니메이션</td></tr>
+              <tr><td>조작 안내 (튜토리얼)</td><td><span style="color:#58C97A;">✓ CH_OPENING만</span></td><td>오프닝 챕터 독백에 통합</td></tr>
+              <tr><td>독백 텍스트</td><td><span style="color:#58C97A;">✓ 트리거 발동 시</span></td><td>— (텍스트 자체가 UI, 상세는 <a href="#ch9-2" style="color:var(--red);">9.2</a>)</td></tr>
+              <tr><td>상호작용 하이라이트</td><td><span style="color:#58C97A;">✓ 항상</span></td><td>VRToonShader 외곽선 (<a href="#ch2-3" style="color:var(--red);">2.3.1</a>)</td></tr>
+              <tr><td>일시정지 메뉴</td><td><span style="color:#58C97A;">✓</span></td><td>ESC키 — 재개 / 처음부터 / 종료</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 9.2 독백 텍스트 UI -->
+      <div class="subsection" id="ch9-2">
+        <div class="subsection-title"><span class="subsection-num">9.2</span>독백 텍스트 UI</div>
+        <p class="prose" style="margin-bottom:16px;">독백 텍스트 출력 방침은 <a href="#ch7-1" style="color:var(--red);">7.1 독백 설계 원칙</a>을 함께 참조하세요.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>속성</th><th>값</th><th>비고</th></tr></thead>
+            <tbody>
+              <tr><td>위치</td><td>화면 하단 중앙</td><td>수직 기준: 하단 10% 지점</td></tr>
+              <tr><td>정렬</td><td>중앙 정렬</td><td></td></tr>
+              <tr><td>폰트</td><td><strong>나눔스퀘어</strong></td><td>현지화 시 영문·일문 폰트 별도 지정 <span class="tbd">[TBD]</span></td></tr>
+              <tr><td>텍스트 영역 가로</td><td>화면 가로의 <strong>0.8 비율</strong> (1920px 기준 1536px)</td><td>초과 시 자동 줄바꿈</td></tr>
+              <tr><td>크기</td><td><span class="tbd">[TBD]</span></td><td>1920×1080 기준 px — 플레이 테스트 후 결정</td></tr>
+              <tr><td>색상</td><td>흰색 (#FFFFFF) + 반투명 드롭 그림자</td><td>배경 박스 없음</td></tr>
+              <tr><td>최대 줄 수</td><td>2줄</td><td>긴 독백은 여러 번 나눠 출력</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 9.3 스타트 화면 -->
+      <div class="subsection" id="ch9-3">
+        <div class="subsection-title"><span class="subsection-num">9.3</span>스타트 화면</div>
+        <p class="prose" style="margin-bottom:16px;">게임 실행 시 가장 먼저 표시되는 화면입니다. 총 플레이타임은 상호작용 없이 표시만 합니다.</p>
+
+        <div class="table-wrap" style="margin-bottom:20px;">
+          <table>
+            <thead><tr><th>요소</th><th>기능</th><th>조건</th></tr></thead>
+            <tbody>
+              <tr><td><strong>시작</strong></td><td>CH_OPENING부터 새로 시작. 기존 세이브가 있으면 초기화 확인.</td><td>항상 표시</td></tr>
+              <tr><td><strong>이어하기</strong></td><td>마지막 저장 챕터부터 재개 + 클리어 챕터 개별 재플레이 선택 (<a href="#ch6-3" style="color:var(--red);">6.3 챕터 불러오기</a>)</td><td>세이브 파일 있을 때만 활성화</td></tr>
+              <tr><td><strong>나가기</strong></td><td>게임 종료</td><td>항상 표시</td></tr>
+              <tr><td><strong>총 플레이타임</strong></td><td><a href="#ch6-2" style="color:var(--red);">total_playtime</a> 값 표시 (시:분:초 형식)</td><td>세이브 있을 때만 표시. 상호작용 없음.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div style="font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:3px;color:var(--gray-500);margin-bottom:12px;text-transform:uppercase;">스타트 화면 가구성 (1920×1080)</div>
+        <div class="diagram-wrap" style="padding:0;overflow:hidden;">
+          <svg viewBox="0 0 960 540" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;background:#0D0D0D;">
+            <!-- 배경 격자 -->
+            <defs>
+              <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1A1917" stroke-width="0.5"/>
+              </pattern>
+            </defs>
+            <rect width="960" height="540" fill="url(#grid)"/>
+
+            <!-- 타이틀 영역 (좌측) -->
+            <text x="80" y="180" font-family="serif" font-size="72" font-weight="bold" fill="#F0EDE8" letter-spacing="4">MOTHER.</text>
+            <text x="80" y="255" font-family="serif" font-size="72" font-weight="bold" fill="#C0392B" letter-spacing="4">PLEASE</text>
+            <rect x="80" y="278" width="60" height="2" fill="#C0392B"/>
+
+            <!-- 총 플레이타임 (타이틀 아래) -->
+            <text x="80" y="318" font-family="monospace" font-size="11" fill="#4A4845" letter-spacing="2">TOTAL PLAYTIME</text>
+            <text x="80" y="338" font-family="monospace" font-size="16" fill="#6B6865" letter-spacing="1">00:00:00</text>
+
+            <!-- 우측 메뉴 영역 -->
+            <!-- 시작 (활성) -->
+            <rect x="580" y="180" width="300" height="52" fill="#1A1917" stroke="#C0392B" stroke-width="1"/>
+            <text x="730" y="213" font-family="monospace" font-size="14" fill="#F0EDE8" text-anchor="middle" letter-spacing="3">시  작</text>
+
+            <!-- 이어하기 -->
+            <rect x="580" y="244" width="300" height="52" fill="#1A1917" stroke="#3A3835" stroke-width="1"/>
+            <text x="730" y="277" font-family="monospace" font-size="14" fill="#8A8785" text-anchor="middle" letter-spacing="3">이 어 하 기</text>
+
+            <!-- 나가기 -->
+            <rect x="580" y="308" width="300" height="52" fill="#1A1917" stroke="#3A3835" stroke-width="1"/>
+            <text x="730" y="341" font-family="monospace" font-size="14" fill="#8A8785" text-anchor="middle" letter-spacing="3">나 가 기</text>
+
+            <!-- 세이브 없음 안내 -->
+            <text x="730" y="392" font-family="monospace" font-size="10" fill="#4A4845" text-anchor="middle" letter-spacing="1">이어하기: 세이브 없을 시 비활성화</text>
+
+            <!-- 버전 표시 하단 -->
+            <text x="48" y="522" font-family="monospace" font-size="10" fill="#3A3835" letter-spacing="1">v2.0  ·  KUMAMARU STUDIO</text>
+            <text x="912" y="522" font-family="monospace" font-size="10" fill="#3A3835" text-anchor="end" letter-spacing="1">1920×1080</text>
+          </svg>
+        </div>
+        <div class="diagram-caption" style="margin-top:0;padding:8px 16px;background:var(--gray-900);border:1px solid var(--gray-700);border-top:none;">Fig 9.3a — 스타트 화면 가구성</div>
+      </div>
+
+      <!-- 9.4 인게임 HUD 가구성 -->
+      <div class="subsection" id="ch9-4">
+        <div class="subsection-title"><span class="subsection-num">9.4</span>인게임 HUD 가구성</div>
+        <p class="prose" style="margin-bottom:16px;">인게임은 HUD 요소가 거의 없습니다. 독백 텍스트 위치와 상호작용 하이라이트 위치만 확인합니다.</p>
+        <div class="diagram-wrap" style="padding:0;overflow:hidden;">
+          <svg viewBox="0 0 960 540" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;background:#0D0D0D;">
+            <defs>
+              <pattern id="grid2" width="40" height="40" patternUnits="userSpaceOnUse">
+                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1A1917" stroke-width="0.5"/>
+              </pattern>
+            </defs>
+            <rect width="960" height="540" fill="url(#grid2)"/>
+
+            <!-- 게임 화면 영역 표시 -->
+            <rect x="40" y="40" width="880" height="460" fill="none" stroke="#252320" stroke-width="1" stroke-dasharray="4,4"/>
+            <text x="480" y="240" font-family="monospace" font-size="13" fill="#3A3835" text-anchor="middle" letter-spacing="1">인게임 렌더 영역</text>
+            <text x="480" y="260" font-family="monospace" font-size="11" fill="#252320" text-anchor="middle">(침대·방·어머니 등 3D 씬)</text>
+
+            <!-- 피해 비네팅 표시 (가장자리 효과) -->
+            <rect x="40" y="40" width="880" height="460" fill="none" stroke="#C0392B" stroke-width="0" opacity="0.3"/>
+            <text x="56" y="72" font-family="monospace" font-size="9" fill="#922B21" letter-spacing="1">비네팅 (피해 MINOR 이상)</text>
+            <line x1="40" y1="40" x2="160" y2="40" stroke="#922B21" stroke-width="1" opacity="0.5"/>
+            <line x1="40" y1="40" x2="40" y2="120" stroke="#922B21" stroke-width="1" opacity="0.5"/>
+
+            <!-- 독백 텍스트 영역 -->
+            <rect x="192" y="462" width="576" height="48" fill="rgba(192,57,43,0.06)" stroke="#C0392B" stroke-width="1" stroke-dasharray="3,3"/>
+            <text x="480" y="481" font-family="serif" font-size="13" fill="#F0EDE8" text-anchor="middle">…또 오는구나.</text>
+            <text x="480" y="500" font-family="monospace" font-size="9" fill="#C0392B" text-anchor="middle" letter-spacing="1">독백 텍스트 영역 (가로 0.8 = 1536px 기준)</text>
+
+            <!-- 가로 0.8 범위 표시선 -->
+            <line x1="192" y1="456" x2="192" y2="516" stroke="#C0392B" stroke-width="0.5" opacity="0.5"/>
+            <line x1="768" y1="456" x2="768" y2="516" stroke="#C0392B" stroke-width="0.5" opacity="0.5"/>
+            <line x1="40" y1="456" x2="192" y2="456" stroke="#4A4845" stroke-width="0.5" stroke-dasharray="2,2"/>
+            <line x1="768" y1="456" x2="920" y2="456" stroke="#4A4845" stroke-width="0.5" stroke-dasharray="2,2"/>
+            <text x="116" y="451" font-family="monospace" font-size="8" fill="#4A4845" text-anchor="middle">10%</text>
+            <text x="844" y="451" font-family="monospace" font-size="8" fill="#4A4845" text-anchor="middle">10%</text>
+
+            <!-- 상호작용 하이라이트 예시 -->
+            <rect x="390" y="260" width="80" height="50" fill="none" stroke="#F0EDE8" stroke-width="1.5" opacity="0.6"/>
+            <text x="430" y="292" font-family="monospace" font-size="8" fill="#F0EDE8" text-anchor="middle" opacity="0.6">오브젝트</text>
+            <text x="430" y="328" font-family="monospace" font-size="9" fill="#8A8785" text-anchor="middle" letter-spacing="1">VRToonShader 하이라이트</text>
+
+            <!-- 해상도 표시 -->
+            <text x="912" y="530" font-family="monospace" font-size="10" fill="#3A3835" text-anchor="end" letter-spacing="1">1920×1080</text>
+          </svg>
+        </div>
+        <div class="diagram-caption" style="margin-top:0;padding:8px 16px;background:var(--gray-900);border:1px solid var(--gray-700);border-top:none;">Fig 9.4a — 인게임 HUD 가구성</div>
+      </div>
+
+      <!-- 9.5 화면 전환 플로우 -->
+      <div class="subsection" id="ch9-5">
+        <div class="subsection-title"><span class="subsection-num">9.5</span>화면 전환 플로우</div>
+        <div class="diagram-wrap">
+          <div class="mermaid">
+%%{init: {'theme': 'base','themeVariables': {'primaryColor': '#252320','primaryTextColor': '#F0EDE8','primaryBorderColor': '#3A3835','lineColor': '#C0392B','fontFamily': 'Courier Prime, monospace'}}}%%
+flowchart TD
+    A["🖥 스타트 화면\n시작 / 이어하기 / 나가기\n총 플레이타임 표시"] --> B{"선택"}
+    B -- "시작" --> C["세이브 있으면 초기화 확인\n→ CH_OPENING 로드"]
+    B -- "이어하기" --> D{"세이브 있음?"}
+    D -- "없음" --> A
+    D -- "있음" --> E["이어하기: 저장된 챕터 재개\n또는 클리어 챕터 선택 재플레이"]
+    E --> F["인게임\n(챕터 진행)"]
+    C --> F
+    B -- "나가기" --> Z["게임 종료"]
+    F --> G{"ESC 입력?"}
+    G -- "예" --> H["일시정지 메뉴\n재개 / 처음부터 / 종료"]
+    H -- "재개" --> F
+    H -- "처음부터" --> A
+    H -- "종료" --> A
+    G -- "아니오" --> F
+    F --> I{"CH_ENDING 완료?"}
+    I -- "예" --> J["엔딩 화면\n플레이타임 표시"]
+    J --> A
+          </div>
+          <div class="diagram-caption">Fig 9.5 — 전체 화면 전환 플로우 / Screen Flow</div>
+        </div>
+      </div>
+
+      <!-- 9.6 엔딩 화면 -->
+      <div class="subsection" id="ch9-6">
+        <div class="subsection-title"><span class="subsection-num">9.6</span>엔딩 화면</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>요소</th><th>내용</th><th>비고</th></tr></thead>
+            <tbody>
+              <tr><td><strong>엔딩 연출</strong></td><td>CH_ENDING 연출 재생</td><td>내용 <span class="tbd">[TBD]</span></td></tr>
+              <tr><td><strong>총 플레이타임</strong></td><td><a href="#ch6-2" style="color:var(--red);">total_playtime</a> 값 표시 (시:분:초)</td><td>트로피 형태로 강조 표시</td></tr>
+              <tr><td><strong>복귀</strong></td><td>임의 키 입력 또는 일정 시간 후 스타트 화면으로 자동 복귀</td><td></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════
+         CH 10. 오디오 시스템
+    ═══════════════════════════════ -->
+    <section class="section" id="ch10">
+      <div class="section-header">
+        <div class="section-label">Chapter 10</div>
+        <h2 class="section-title">오디오 <span>시스템</span></h2>
+        <p class="section-desc">
+          BGM, SFX, 이벤트 연동 트리거 규칙을 정의합니다.
+          오디오는 UI 대신 피해 상태와 긴장감을 전달하는 주요 수단입니다.
+        </p>
+      </div>
+
+      <!-- 10.1 BGM 설계 방침 -->
+      <div class="subsection" id="ch10-1">
+        <div class="subsection-title"><span class="subsection-num">10.1</span>BGM 설계 방침</div>
+        <div class="callout">
+          <div class="callout-label">BGM 원칙</div>
+          <p>BGM은 <strong style="color:var(--off-white)">피해 단계에 따라 레이어가 추가되는 Adaptive Music</strong> 방식으로 구성합니다. 기본 앰비언트 트랙 위에 긴장감 레이어가 얹히는 구조로, 플레이어가 피해가 쌓임을 BGM으로 체감하게 합니다.</p>
+        </div>
+        <div style="height:16px;"></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>레이어</th><th>트리거 조건</th><th>음악 성격</th><th>에셋 ID</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Layer 0</strong> (베이스)</td><td>항상 재생</td><td>낮고 정적인 앰비언트. 1950년대 집 안의 정적.</td><td><span class="tbd">[TBD]</span></td></tr>
+              <tr><td><strong>Layer 1</strong></td><td>피해 MINOR 도달</td><td>불협화음 요소 추가. 불안감 시작.</td><td><span class="tbd">[TBD]</span></td></tr>
+              <tr><td><strong>Layer 2</strong></td><td>피해 SERIOUS 도달</td><td>타악 요소 + 심박 리듬. 압박감.</td><td><span class="tbd">[TBD]</span></td></tr>
+              <tr><td><strong>Layer 3</strong></td><td>피해 CRITICAL 도달</td><td>불규칙 충격음 + 이명음. 혼란.</td><td><span class="tbd">[TBD]</span></td></tr>
+              <tr><td><strong>연출 트랙</strong></td><td>챕터 DIRECTION 상태</td><td>챕터별 개별 트랙. 어머니 등장 연출과 동기화.</td><td><span class="tbd">[TBD]</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="table-wrap" style="margin-top:16px;">
+          <table>
+            <thead><tr><th>파라미터</th><th>값</th><th>설명</th></tr></thead>
+            <tbody>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:12px;">LayerFadeTime</code></td><td><strong>2.0s</strong></td><td>레이어 전환 시 크로스페이드 시간</td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:12px;">DirectionTrackFadeIn</code></td><td><strong>1.0s</strong></td><td>연출 트랙 시작 페이드 인</td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:12px;">DirectionTrackFadeOut</code></td><td><strong>1.5s</strong></td><td>연출 종료 후 베이스 레이어 복귀 페이드 아웃</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 10.2 SFX 정의 -->
+      <div class="subsection" id="ch10-2">
+        <div class="subsection-title"><span class="subsection-num">10.2</span>SFX 정의 목록</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>SFX ID</th><th>재생 조건</th><th>설명</th><th>에셋</th></tr></thead>
+            <tbody>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:11px;">SFX_ARM_MOVE</code></td><td>팔 이동 중</td><td>팔이 침대 위를 스치는 마찰음 (루프)</td><td><span class="tbd">[TBD]</span></td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:11px;">SFX_INTERACT_HOVER</code></td><td>오브젝트 하이라이트 진입</td><td>미세한 클릭음 또는 전기 잡음</td><td><span class="tbd">[TBD]</span></td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:11px;">SFX_INTERACT_ACTION</code></td><td>휠 입력 발생 시</td><td>오브젝트 조작 음 (타입별 다름)</td><td><span class="tbd">[TBD]</span></td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:11px;">SFX_DAMAGE_MINOR</code></td><td>피해 MINOR 진입</td><td>짧은 신음 + 날카로운 숨 들이쉬기</td><td><span class="tbd">[TBD]</span></td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:11px;">SFX_DAMAGE_SERIOUS</code></td><td>피해 SERIOUS 진입</td><td>더 깊은 신음 + 심박음 루프 시작</td><td><span class="tbd">[TBD]</span></td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:11px;">SFX_DAMAGE_CRITICAL</code></td><td>피해 CRITICAL 진입</td><td>이명음 + 심박 불규칙 SFX</td><td><span class="tbd">[TBD]</span></td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:11px;">SFX_MINIGAME_SUCCESS</code></td><td>미니게임 성공</td><td>안도의 숨소리</td><td><span class="tbd">[TBD]</span></td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:11px;">SFX_MINIGAME_FAIL</code></td><td>미니게임 실패</td><td>기력이 빠지는 소리 (페이드 아웃)</td><td><span class="tbd">[TBD]</span></td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:11px;">SFX_CHAPTER_TRANSITION</code></td><td>챕터 전환 페이드 중</td><td>심장박동 1회 + 정적</td><td><span class="tbd">[TBD]</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 10.3 이벤트 연동 규칙 -->
+      <div class="subsection" id="ch10-3">
+        <div class="subsection-title"><span class="subsection-num">10.3</span>이벤트 연동 트리거 규칙</div>
+        <p class="prose" style="margin-bottom:16px;">각 시스템이 오디오 시스템을 호출하는 규칙입니다. 직접 호출 방식이 아닌 <strong>이벤트 발행(Event Dispatch)</strong> 방식을 권장합니다.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>호출 시스템</th><th>이벤트</th><th>오디오 처리</th></tr></thead>
+            <tbody>
+              <tr><td>피해 시스템 (5장)</td><td>DamageStageChanged(stage)</td><td>해당 stage에 맞는 BGM 레이어 활성화 + SFX_DAMAGE_* 재생</td></tr>
+              <tr><td>미니게임 시스템 (4장)</td><td>MinigameSuccess</td><td>SFX_MINIGAME_SUCCESS 재생 + BGM 레이어 NORMAL로 복귀</td></tr>
+              <tr><td>미니게임 시스템 (4장)</td><td>MinigameFail</td><td>SFX_MINIGAME_FAIL 재생 + BGM 페이드 아웃</td></tr>
+              <tr><td>연출 시스템 (8장)</td><td>DirectionStart(chapter_id)</td><td>연출 트랙 재생 (챕터별 개별 트랙)</td></tr>
+              <tr><td>연출 시스템 (8장)</td><td>DirectionEnd</td><td>연출 트랙 페이드 아웃 → 베이스 복귀</td></tr>
+              <tr><td>챕터 구조 (3장)</td><td>ChapterTransition</td><td>SFX_CHAPTER_TRANSITION 재생</td></tr>
+              <tr><td>독백 시스템 (7장)</td><td>MonologueLine(audio_id)</td><td>audio_id 보이스 에셋 재생 (audio_id 있을 때만)</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════
+         CHANGELOG
+    ═══════════════════════════════ -->
+    <div class="changelog">
+      <div class="changelog-title">변경 이력 / Changelog</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>버전</th>
+              <th>구분</th>
+              <th>항목</th>
+              <th>기존 내용</th>
+              <th>변경 내용</th>
+              <th>비고</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="font-family:'Courier Prime',monospace;">v1.0</td>
+              <td><span class="chip chip-done" style="font-size:10px;">추가</span></td>
+              <td>문서 최초 작성</td>
+              <td>—</td>
+              <td>1장 (문서 개요) 완성, 2~10장 스텁 생성</td>
+              <td>최초 생성</td>
+            </tr>
+            <tr>
+              <td style="font-family:'Courier Prime',monospace;">v1.1</td>
+              <td><span class="chip chip-done" style="font-size:10px;">삭제</span></td>
+              <td>관련 문서 — 미확정 문서 3종</td>
+              <td>치료 이벤트 상세 기획서 / 레벨 기획서 / 서사 기획서</td>
+              <td>—</td>
+              <td>미확정 문서는 관련 문서 목록에 포함하지 않음</td>
+            </tr>
+            <tr>
+              <td style="font-family:'Courier Prime',monospace;">v1.1</td>
+              <td><span class="chip chip-wip" style="font-size:10px;">추가</span></td>
+              <td>관련 문서 — 대사 데이터 CSV</td>
+              <td>—</td>
+              <td>dialogue_data.csv 항목 추가</td>
+              <td>CSV 기반 대사 시스템 방침 반영</td>
+            </tr>
+            <tr>
+              <td style="font-family:'Courier Prime',monospace;">v1.2</td>
+              <td><span class="chip chip-done" style="font-size:10px;">추가</span></td>
+              <td>2장 — 조작 시스템</td>
+              <td>스텁</td>
+              <td>전체 내용 작성 완료 (2.1~2.4)</td>
+              <td>TBD 3건 포함</td>
+            </tr>
+            <tr>
+              <td style="font-family:'Courier Prime',monospace;">v1.3</td>
+              <td><span class="chip chip-done" style="font-size:10px;">삭제</span></td>
+              <td>7장 — 어머니 AI 시스템</td>
+              <td>어머니 AI 시스템</td>
+              <td>—</td>
+              <td>어머니는 스크립트 기반 연출로 처리 확정</td>
+            </tr>
+            <tr>
+              <td style="font-family:'Courier Prime',monospace;">v1.3</td>
+              <td><span class="chip chip-done" style="font-size:10px;">수정</span></td>
+              <td>전체 목차 구조 개편</td>
+              <td>치료이벤트/피해/진행/AI/내러티브</td>
+              <td>챕터구조/미니게임/피해/체크포인트/독백/연출</td>
+              <td>치료 1종 = 챕터 1개 구조 반영</td>
+            </tr>
+            <tr>
+              <td style="font-family:'Courier Prime',monospace;">v1.3</td>
+              <td><span class="chip chip-wip" style="font-size:10px;">추가</span></td>
+              <td>3~8장 스텁 — 설계 방침 선반영</td>
+              <td>빈 스텁</td>
+              <td>챕터 구성 3요소 / 미니게임 4종 목록 / 점진적 피해 원칙 / CSV 컬럼 이동 등</td>
+              <td>본문 작성 시 확정</td>
+            </tr>
+            <tr>
+              <td style="font-family:'Courier Prime',monospace;">v1.4</td>
+              <td><span class="chip chip-done" style="font-size:10px;">추가</span></td>
+              <td>3장 — 챕터 구조 시스템</td>
+              <td>스텁</td>
+              <td>전체 내용 작성 완료 (3.1~3.4)</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td style="font-family:'Courier Prime',monospace;">v2.0</td>
+              <td><span class="chip chip-done" style="font-size:10px;">추가</span></td>
+              <td>4~10장 전체</td>
+              <td>스텁</td>
+              <td>미니게임·피해·체크포인트·독백·연출·UI·오디오 시스템 전 장 완성</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td style="font-family:'Courier Prime',monospace;">v2.1</td>
+              <td><span class="chip chip-done" style="font-size:10px;">수정</span></td>
+              <td>2장 — 이동 범위 경계 피드백</td>
+              <td>멈춤 + 진동/화면 피드백</td>
+              <td>멈춤만 적용 (피드백 제거)</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td style="font-family:'Courier Prime',monospace;">v2.1</td>
+              <td><span class="chip chip-done" style="font-size:10px;">수정</span></td>
+              <td>2.3.1 — InteractDetectRadius / HighlightMaterial</td>
+              <td>TBD 비고 없음</td>
+              <td>InteractDetectRadius: 침대 모델링 후 결정 명시 / HighlightMaterial: VRToonShader 확정</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td style="font-family:'Courier Prime',monospace;">v2.1</td>
+              <td><span class="chip chip-done" style="font-size:10px;">수정</span></td>
+              <td>3장 — 챕터 구성 3요소 → 챕터 내부 구성</td>
+              <td>독백→미니게임→연출 고정 순서</td>
+              <td>시나리오 확정 후 구성. 미니게임 트리거 기반으로 변경.</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td style="font-family:'Courier Prime',monospace;">v2.1</td>
+              <td><span class="chip chip-done" style="font-size:10px;">수정</span></td>
+              <td>3.3 — 챕터 생명주기</td>
+              <td>MONOLOGUE 상태 포함 고정 흐름</td>
+              <td>LOADING→CHECKPOINT_WRITE→READY→RUNNING→TRANSITION 단순화. 내부 구성 WIP.</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td style="font-family:'Courier Prime',monospace;">v2.1</td>
+              <td><span class="chip chip-done" style="font-size:10px;">수정</span></td>
+              <td>3.4 — 챕터 전환 규칙</td>
+              <td>파라미터 테이블</td>
+              <td>페이드아웃→챕터명 스프라이트→페이드인 순서로 재정의. 파라미터화 제거.</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td style="font-family:'Courier Prime',monospace;">v2.1</td>
+              <td><span class="chip chip-done" style="font-size:10px;">수정</span></td>
+              <td>4.1 — 미니게임 공통 구조</td>
+              <td>MONOLOGUE 완료 후 기동, freeze/damage 파라미터</td>
+              <td>트리거(Flag) 기반 기동으로 변경. SuccessFreezeTime·FailFreezeTime·DamageModel 제거.</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td style="font-family:'Courier Prime',monospace;">v2.1</td>
+              <td><span class="chip chip-done" style="font-size:10px;">수정</span></td>
+              <td>4.2 전기치료 — 컨셉 변경</td>
+              <td>어머니가 전기치료 장치 연결</td>
+              <td>어머니가 적외선 전열기구 방치 → 화상 사망 전 코드 뽑기. 가안 표시.</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td style="font-family:'Courier Prime',monospace;">v2.1</td>
+              <td><span class="chip chip-done" style="font-size:10px;">수정</span></td>
+              <td>4.3 거머리치료 — 컨셉 변경</td>
+              <td>손 위 거머리 PRESS로 내쫓기</td>
+              <td>거머리가 카메라까지 기어오는 공포 연출 메인. 방향키+휠로 떼어내기. 가안 표시.</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td style="font-family:'Courier Prime',monospace;">v2.1</td>
+              <td><span class="chip chip-done" style="font-size:10px;">수정</span></td>
+              <td>4.5 탈출시도 — 컨셉 변경</td>
+              <td>비밀번호 자물쇠 다이얼</td>
+              <td>다이얼 전화기로 도움 요청 번호 입력. 번호 획득 방식은 시나리오 후 확정. 가안 표시.</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td style="font-family:'Courier Prime',monospace;">v2.1</td>
+              <td><span class="chip chip-done" style="font-size:10px;">수정</span></td>
+              <td>5.3 — 피해 초기화 시점</td>
+              <td>챕터 시작 시 초기화</td>
+              <td>미니게임 종료 시 초기화로 변경</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td style="font-family:'Courier Prime',monospace;">v2.1</td>
+              <td><span class="chip chip-done" style="font-size:10px;">수정</span></td>
+              <td>5.4 — 피해 DamageInterval 수치</td>
+              <td>전체 TBD</td>
+              <td>전기=흡혈 20s / 공포압박 15s / 각성 12s 잠정 수치 입력</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td style="font-family:'Courier Prime',monospace;">v2.1</td>
+              <td><span class="chip chip-done" style="font-size:10px;">수정</span></td>
+              <td>6장 — 저장 데이터 / 불러오기 추가</td>
+              <td>completed_chapters 필드 없음</td>
+              <td>completed_chapters 필드 추가. 6.3 챕터 불러오기 섹션 신설. 플레이타임 저장 이유 명시.</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td style="font-family:'Courier Prime',monospace;">v2.1</td>
+              <td><span class="chip chip-done" style="font-size:10px;">수정</span></td>
+              <td>7.1 — 독백 설계 원칙</td>
+              <td>조작 잠금, 스킵 TBD</td>
+              <td>조작 잠금 제거. 스킵 없음. 텍스트 가로 0.8 규칙 추가. UE5 레퍼런스 링크 추가.</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td style="font-family:'Courier Prime',monospace;">v2.1</td>
+              <td><span class="chip chip-done" style="font-size:10px;">수정</span></td>
+              <td>8장 — 연출 시스템</td>
+              <td>챕터별 연출 개요 표 포함, 스킵/MotherAppearOffset 파라미터</td>
+              <td>챕터별 연출 개요 삭제(시나리오 후 재작성). 스킵·MotherAppearOffset 제거. 미니게임 트리거 항목 추가.</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td style="font-family:'Courier Prime',monospace;">v2.1</td>
+              <td><span class="chip chip-done" style="font-size:10px;">수정</span></td>
+              <td>9장 — UI 시스템 전면 개편</td>
+              <td>타이틀/엔딩 2개 화면</td>
+              <td>스타트 화면 목차 신설(9.3). 독백 폰트 나눔스퀘어 확정. 가구성 SVG 2종 추가(스타트·인게임). 화면 전환 플로우 업데이트.</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td style="font-family:'Courier Prime',monospace;">v2.2</td>
+              <td><span class="chip chip-done" style="font-size:10px;">추가</span></td>
+              <td>4.1.2 — Flag 초기화 규칙</td>
+              <td>초기화 규칙 없음</td>
+              <td>불러오기 재진입 시 미니게임 미기동 버그 방지를 위한 Flag 초기화 조건 3가지 명세. 상태 다이어그램에 Flag 상태 표기 추가.</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td style="font-family:'Courier Prime',monospace;">v2.2</td>
+              <td><span class="chip chip-done" style="font-size:10px;">추가</span></td>
+              <td>7.2 — 트리거 네이밍 규칙</td>
+              <td>규칙 미정의</td>
+              <td>[SCOPE]_[CHAPTER]_[ACTION] 구조 정의. SCOPE 목록(DLG/MG/DIR/CH). ACTION 작성 규칙. 예시 5종. 기존 7.2→7.3, 7.3→7.4 번호 이동.</td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="footer">
+      MOTHER. PLEASE — 시스템 기획서 v2.2 · 쿠마마루 · 내부 개발 전용 문서
+    </div>
+
+  </main>
+</div>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'base',
+    themeVariables: {
+      primaryColor: '#252320',
+      primaryTextColor: '#F0EDE8',
+      primaryBorderColor: '#3A3835',
+      lineColor: '#C0392B',
+      secondaryColor: '#1A1917',
+      fontFamily: 'Courier Prime, monospace'
+    }
+  });
+
+  // Sidebar active state on scroll
+  const sections = document.querySelectorAll('section[id], div[id^="ch"]');
+  const sidebarLinks = document.querySelectorAll('.sidebar a');
+  const navLinks = document.querySelectorAll('.doc-nav a');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        sidebarLinks.forEach(a => {
+          a.classList.toggle('current', a.getAttribute('href') === '#' + id);
+        });
+        navLinks.forEach(a => {
+          a.classList.toggle('active', a.getAttribute('href') === '#' + id);
+        });
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+
+<!-- tags: 개요, 시스템, 문서구조 -->
+</body>
+</html>
