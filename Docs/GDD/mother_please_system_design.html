@@ -490,6 +490,135 @@
     letter-spacing: 1px;
   }
 
+  /* ─── MOBILE RESPONSIVE ─── */
+
+  /* 햄버거 버튼 — 전역 기본값 display:none */
+  #toc-toggle {
+    display: none;
+    position: fixed;
+    bottom: 20px; right: 20px;
+    z-index: 200;
+    width: 48px; height: 48px;
+    background: var(--gray-900);
+    border: 1px solid var(--red);
+    border-radius: 50%;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 5px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    transition: background 0.2s;
+  }
+  #toc-toggle span {
+    display: block;
+    width: 20px; height: 2px;
+    background: var(--off-white);
+    border-radius: 2px;
+    transition: all 0.25s;
+  }
+  body.toc-open #toc-toggle span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  body.toc-open #toc-toggle span:nth-child(2) { opacity: 0; }
+  body.toc-open #toc-toggle span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+  /* 딤 오버레이 — 전역 기본값 display:none */
+  #toc-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 99;
+    backdrop-filter: blur(2px);
+  }
+  body.toc-open #toc-overlay { display: block; }
+
+  /* 모바일 전용 재정의 */
+  @media (max-width: 768px) {
+
+    .doc-header {
+      padding: 10px 16px;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .doc-nav { display: none; }
+
+    /* 사이드바 → 모바일에서 fixed 오버레이로 전환 */
+    .sidebar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 100vh;
+      z-index: 150;
+      transform: translateX(-100%);
+      transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+      width: 260px;
+    }
+    body.toc-open .sidebar { transform: translateX(0); }
+
+    #toc-toggle { display: flex; }
+
+    .main {
+      padding: 24px 16px 80px;
+      max-width: 100%;
+    }
+
+    /* 타이포그래피 축소 */
+    .cover-title { font-size: 48px; }
+    .cover-subtitle { font-size: 16px; letter-spacing: 3px; }
+    .cover-meta-grid { grid-template-columns: 1fr 1fr; }
+    .section-title { font-size: 28px; }
+    .subsection-title { font-size: 13px; }
+    .prose { font-size: 13px; }
+
+    /* 테이블 가로 스크롤 */
+    .table-wrap {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin: 12px -16px;
+      padding: 0 16px;
+    }
+    .table-wrap::after {
+      content: '← 표를 좌우로 스크롤하세요';
+      display: block;
+      font-size: 10px;
+      color: var(--gray-600);
+      text-align: right;
+      padding: 4px 0 0;
+    }
+    table { min-width: 520px; }
+    thead th { font-size: 10px; padding: 8px 10px; }
+    tbody td  { font-size: 12px; padding: 7px 10px; }
+
+    /* 다이어그램 가로 스크롤 */
+    .diagram-wrap {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .diagram-wrap::after {
+      content: '← 다이어그램을 좌우로 스크롤하세요';
+      display: block;
+      font-size: 10px;
+      color: var(--gray-600);
+      text-align: right;
+      padding: 6px 0 0;
+    }
+
+    /* 2열 그리드 → 1열 전환 */
+    .info-grid { grid-template-columns: 1fr; }
+    .cover-inner { flex-direction: column; gap: 32px; }
+    .controls-grid { grid-template-columns: 1fr; }
+    .cover-meta-grid { max-width: 100%; }
+
+    /* 인포 블록 */
+    .info-row { grid-template-columns: 100px 1fr; }
+  }
+
+  @media (max-width: 420px) {
+    .cover-title { font-size: 32px; }
+    .cover-meta-grid { grid-template-columns: 1fr 1fr; }
+    .doc-title-bar { font-size: 12px; letter-spacing: 1px; }
+    .section-title { font-size: 22px; }
+  }
+
   /* ─── PRINT ─── */
   @media print {
     .doc-header, .sidebar { display: none; }
@@ -500,13 +629,19 @@
 </head>
 <body>
 
+<div id="toc-overlay"></div>
+
+<button id="toc-toggle" aria-label="목차 열기">
+  <span></span><span></span><span></span>
+</button>
+
 <!-- ═══════════════════════════════════════════════
      STICKY HEADER
 ═══════════════════════════════════════════════ -->
 <header class="doc-header">
   <div class="doc-title-bar">MOTHER.<span>PLEASE</span> — 시스템 기획서</div>
   <div class="doc-meta">
-    <span class="version">v2.2</span>
+    <span class="version">v2.9</span>
     <span class="doc-date">2026-03-15</span>
     <span class="doc-author">쿠마마루</span>
   </div>
@@ -580,7 +715,7 @@
       <div class="cover-meta-grid">
         <div class="cover-meta-item">
           <div class="cover-meta-label">VERSION</div>
-          <div class="cover-meta-value red">v2.2</div>
+          <div class="cover-meta-value red">v2.9</div>
         </div>
         <div class="cover-meta-item">
           <div class="cover-meta-label">DATE</div>
@@ -625,11 +760,23 @@
           </div>
           <div class="info-row">
             <div class="info-key">대상 독자</div>
-            <div class="info-val">강동완 (프로그래밍 · 3D), 박지민 (아트 · 이펙트)</div>
+            <div class="info-val">강동완 (3D 모델링), 박지민 (이펙트 · 셰이더), 김재현 (기획), 장규봉 (프로그래밍)</div>
           </div>
           <div class="info-row">
             <div class="info-key">작성 목적</div>
             <div class="info-val">MOTHER. PLEASE 개발에 필요한 모든 게임 시스템의 설계 명세를 단일 문서에 정의하고, 구현 판단의 기준점을 제공</div>
+          </div>
+          <div class="info-row">
+            <div class="info-key">목표 플레이타임</div>
+            <div class="info-val"><strong style="color:var(--off-white);">3시간</strong> (1회 클리어 기준)</div>
+          </div>
+          <div class="info-row">
+            <div class="info-key">출시 가격</div>
+            <div class="info-val">
+              <strong style="color:var(--off-white);">₩12,000</strong> (한국) &nbsp;/&nbsp;
+              <strong style="color:var(--off-white);">$9.99</strong> (북미) &nbsp;/&nbsp;
+              <strong style="color:var(--off-white);">¥1,100</strong> (일본)
+            </div>
           </div>
           <div class="info-row">
             <div class="info-key">적용 범위</div>
@@ -691,11 +838,18 @@
                 <td>본 문서</td>
               </tr>
               <tr>
-                <td><strong>대사 데이터 CSV</strong><br><span style="font-family:'Courier Prime',monospace;font-size:11px;color:var(--gray-500)">dialogue_data.csv</span></td>
+                <td><strong>시나리오 기획서</strong><br><span style="font-family:'Courier Prime',monospace;font-size:11px;color:var(--gray-500)">mother_please_scenario.html</span></td>
+                <td><span style="font-family:'Courier Prime',monospace;font-size:12px;">v1.0.0</span></td>
+                <td><span class="tag tag-plan">시나리오</span></td>
+                <td><span class="chip chip-wip">WIP</span></td>
+                <td>세계관·인물·챕터별 시나리오 방향 정의. 대사·연출 스크립트 집필 후 업데이트 예정.</td>
+              </tr>
+              <tr>
+                <td><strong>대사 데이터</strong><br><span style="font-family:'Courier Prime',monospace;font-size:11px;color:var(--gray-500)">dialogue_data.xlsx</span></td>
                 <td><span style="font-family:'Courier Prime',monospace;font-size:12px;color:var(--gray-600)">—</span></td>
                 <td><span class="tag tag-plan">데이터</span></td>
-                <td><span class="chip chip-plan">예정</span></td>
-                <td>내러티브 시스템 (8장) 구현 기반 데이터. 포맷 정의는 8.1 참조</td>
+                <td><span class="chip chip-wip">WIP</span></td>
+                <td>독백 시스템 (<a href="#ch7-3" style="color:var(--red);">7.3</a>) 구현 기반 데이터. 샘플 17행 작성. 시나리오 확정 후 전량 입력.</td>
               </tr>
             </tbody>
           </table>
@@ -851,6 +1005,149 @@ flowchart LR
             </tbody>
           </table>
         </div>
+      </div>
+
+      <!-- 1.4 트리거 ID 네이밍 규칙 -->
+      <div class="subsection" id="ch1-4">
+        <div class="subsection-title">
+          <span class="subsection-num">1.4</span>
+          트리거 ID 네이밍 규칙
+        </div>
+
+        <p class="prose" style="margin-bottom:16px;">
+          게임 내 모든 트리거 ID는 아래 규칙을 따릅니다.
+          <a href="#ch4-1" style="color:var(--red);">4.1 미니게임 공통 구조</a>,
+          <a href="#ch7-2" style="color:var(--red);">7.2 dialogue_data.csv</a>,
+          chapter_data.xlsx에서 모두 이 규칙을 기준으로 ID를 작성합니다.
+          규칙 없이 작성하면 코드·데이터 간 ID 불일치가 발생합니다.
+        </p>
+
+        <div style="font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:3px;color:var(--gray-500);margin-bottom:12px;text-transform:uppercase;">1.4.1 — 구조</div>
+
+        <div style="background:var(--gray-900);border:1px solid var(--gray-700);padding:20px 24px;margin-bottom:20px;">
+          <div style="font-family:'Courier Prime',monospace;font-size:18px;color:var(--off-white);letter-spacing:2px;margin-bottom:16px;">
+            {챕터ID} _ {대상} _ {동작}
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <div style="background:rgba(192,57,43,0.15);border:1px solid rgba(192,57,43,0.3);padding:6px 14px;font-family:'Courier Prime',monospace;font-size:12px;color:var(--red);">CH_01_MINIGAME_START</div>
+            <div style="background:rgba(192,57,43,0.15);border:1px solid rgba(192,57,43,0.3);padding:6px 14px;font-family:'Courier Prime',monospace;font-size:12px;color:var(--red);">CH_02_DIALOGUE_START</div>
+            <div style="background:rgba(192,57,43,0.15);border:1px solid rgba(192,57,43,0.3);padding:6px 14px;font-family:'Courier Prime',monospace;font-size:12px;color:var(--red);">CH_03_MINIGAME_SUCCESS</div>
+            <div style="background:rgba(192,57,43,0.15);border:1px solid rgba(192,57,43,0.3);padding:6px 14px;font-family:'Courier Prime',monospace;font-size:12px;color:var(--red);">CH_04_MINIGAME_FAIL</div>
+          </div>
+        </div>
+
+        <div style="font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:3px;color:var(--gray-500);margin-bottom:12px;text-transform:uppercase;">1.4.2 — 챕터 ID (prefix)</div>
+        <div class="table-wrap" style="margin-bottom:16px;">
+          <table>
+            <thead><tr><th>챕터 ID</th><th>챕터명</th><th>사용 가능</th></tr></thead>
+            <tbody>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:12px;">CH_OPENING</code></td><td>오프닝</td><td><span style="color:#58C97A;">✓</span></td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:12px;">CH_01</code></td><td>전기 치료</td><td><span style="color:#58C97A;">✓</span></td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:12px;">CH_02</code></td><td>거머리 치료</td><td><span style="color:#58C97A;">✓</span></td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:12px;">CH_03</code></td><td>생존 신호</td><td><span style="color:#58C97A;">✓</span></td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:12px;">CH_04</code></td><td>탈출 시도</td><td><span style="color:#58C97A;">✓</span></td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:12px;">CH_ENDING</code></td><td>엔딩</td><td><span style="color:#58C97A;">✓</span></td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:12px;">GLOBAL</code></td><td>전역 (챕터 무관)</td><td><span style="color:var(--gray-600);">현재 미사용</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout" style="margin-bottom:20px;">
+          <div class="callout-label">전역 트리거에 관하여</div>
+          <p>현재 챕터 간 상호작용하거나 전역으로 발동해야 하는 트리거를 구상하지 않았으므로 <code style="font-family:'Courier Prime',monospace;font-size:12px;">GLOBAL</code> prefix는 사용하지 않습니다. 향후 필요 시 이 문서에 GLOBAL 항목을 추가하고 신규 ID부터 적용합니다. 기존 <code style="font-family:'Courier Prime',monospace;font-size:12px;">CH_XX_</code> ID에는 영향이 없습니다.</p>
+        </div>
+
+        <div style="font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:3px;color:var(--gray-500);margin-bottom:12px;text-transform:uppercase;">1.4.3 — 대상 키워드</div>
+        <div class="table-wrap" style="margin-bottom:20px;">
+          <table>
+            <thead><tr><th>키워드</th><th>의미</th><th>주 사용처</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">MINIGAME</code></td>
+                <td>미니게임 관련 이벤트</td>
+                <td><a href="#ch4-1" style="color:var(--red);">4.1 미니게임 공통 구조</a></td>
+              </tr>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">DIALOGUE</code></td>
+                <td>독백 텍스트 출력</td>
+                <td><a href="#ch7-2" style="color:var(--red);">7.2 CSV trigger 컬럼</a></td>
+              </tr>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">DAMAGE</code></td>
+                <td>피해 상태 변화</td>
+                <td><a href="#ch5" style="color:var(--red);">5장 피해 시스템</a></td>
+              </tr>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">CHAPTER</code></td>
+                <td>챕터 전환·상태 변화</td>
+                <td><a href="#ch3-3" style="color:var(--red);">3.3 챕터 생명주기</a></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div style="font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:3px;color:var(--gray-500);margin-bottom:12px;text-transform:uppercase;">1.4.4 — 동작 키워드</div>
+        <div class="table-wrap" style="margin-bottom:20px;">
+          <table>
+            <thead><tr><th>키워드</th><th>의미</th><th>예시</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">START</code></td>
+                <td>시작 — 해당 대상이 활성화됨</td>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:11px;color:var(--gray-400);">CH_01_MINIGAME_START</code></td>
+              </tr>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">END</code></td>
+                <td>정상 종료 — 성공·실패 구분 없이 종료</td>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:11px;color:var(--gray-400);">CH_01_DIALOGUE_END</code></td>
+              </tr>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">SUCCESS</code></td>
+                <td>성공 — 목표 달성</td>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:11px;color:var(--gray-400);">CH_03_MINIGAME_SUCCESS</code></td>
+              </tr>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">FAIL</code></td>
+                <td>실패 — 위독 도달 또는 조건 미달</td>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:11px;color:var(--gray-400);">CH_04_MINIGAME_FAIL</code></td>
+              </tr>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">TRIGGER</code></td>
+                <td>단발 발동 — 한 번만 발생하는 이벤트</td>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:11px;color:var(--gray-400);">CH_02_DAMAGE_TRIGGER</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div style="font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:3px;color:var(--gray-500);margin-bottom:12px;text-transform:uppercase;">1.4.5 — 현재 확정 ID 전체 목록</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>트리거 ID</th><th>발동 시점</th><th>참조 시스템</th></tr></thead>
+            <tbody>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:11px;">CH_OPENING_DIALOGUE_START</code></td><td>오프닝 독백 시작</td><td>독백 시스템</td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:11px;">CH_01_DIALOGUE_START</code></td><td>CH_01 독백 시작</td><td>독백 시스템</td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:11px;">CH_01_MINIGAME_START</code></td><td>CH_01 미니게임 트리거 발동</td><td>미니게임 시스템</td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:11px;">CH_01_MINIGAME_SUCCESS</code></td><td>CH_01 미니게임 성공</td><td>미니게임·챕터 구조</td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:11px;">CH_01_MINIGAME_FAIL</code></td><td>CH_01 미니게임 실패 (위독 도달)</td><td>미니게임·체크포인트</td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:11px;">CH_02_DIALOGUE_START</code></td><td>CH_02 독백 시작</td><td>독백 시스템</td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:11px;">CH_02_MINIGAME_START</code></td><td>CH_02 미니게임 트리거 발동</td><td>미니게임 시스템</td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:11px;">CH_02_MINIGAME_SUCCESS</code></td><td>CH_02 미니게임 성공</td><td>미니게임·챕터 구조</td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:11px;">CH_02_MINIGAME_FAIL</code></td><td>CH_02 미니게임 실패</td><td>미니게임·체크포인트</td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:11px;">CH_03_DIALOGUE_START</code></td><td>CH_03 독백 시작</td><td>독백 시스템</td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:11px;">CH_03_MINIGAME_START</code></td><td>CH_03 미니게임 트리거 발동</td><td>미니게임 시스템</td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:11px;">CH_03_MINIGAME_SUCCESS</code></td><td>CH_03 미니게임 성공</td><td>미니게임·챕터 구조</td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:11px;">CH_03_MINIGAME_FAIL</code></td><td>CH_03 미니게임 실패</td><td>미니게임·체크포인트</td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:11px;">CH_04_DIALOGUE_START</code></td><td>CH_04 독백 시작</td><td>독백 시스템</td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:11px;">CH_04_MINIGAME_START</code></td><td>CH_04 미니게임 트리거 발동</td><td>미니게임 시스템</td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:11px;">CH_04_MINIGAME_SUCCESS</code></td><td>CH_04 미니게임 성공</td><td>미니게임·챕터 구조</td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:11px;">CH_04_MINIGAME_FAIL</code></td><td>CH_04 미니게임 실패</td><td>미니게임·체크포인트</td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:11px;">CH_ENDING_DIALOGUE_START</code></td><td>엔딩 독백 시작</td><td>독백 시스템</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="prose" style="margin-top:12px;font-size:12px;color:var(--gray-500);">
+          ※ 시나리오 확정 후 챕터별 추가 독백 트리거 및 연출 내부 이벤트 트리거가 추가될 수 있습니다.
+        </p>
       </div>
     </section>
 
@@ -1161,6 +1458,12 @@ flowchart TD
                 <td>손 내리기</td>
                 <td>생존 신호 (치료 03)</td>
               </tr>
+              <tr>
+                <td><strong>PLAYBACK</strong></td>
+                <td>재생 시작</td>
+                <td>정지</td>
+                <td>테이프형 자동응답기 — 행크의 녹음 메시지 재생. 스토리 트리거 전용. 미니게임과 무관.</td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -1268,7 +1571,7 @@ flowchart TD
                 <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">CH_OPENING</code></td>
                 <td><strong>오프닝</strong></td>
                 <td>—</td>
-                <td>미니게임 없음. 상황 설명 및 조작 튜토리얼</td>
+                <td>미니게임 없음. 조작 튜토리얼. 서사 내용 → <a href="#" style="color:var(--red);">시나리오 기획서 CH_OPENING</a></td>
               </tr>
               <tr>
                 <td>1</td>
@@ -1303,7 +1606,7 @@ flowchart TD
                 <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">CH_ENDING</code></td>
                 <td><strong>엔딩</strong></td>
                 <td>—</td>
-                <td>미니게임 없음. <span class="tbd">[TBD]</span> 엔딩 내용 미확정</td>
+                <td>미니게임 없음. 서사 내용 → <a href="#" style="color:var(--red);">시나리오 기획서 CH_ENDING</a></td>
               </tr>
             </tbody>
           </table>
@@ -1502,33 +1805,42 @@ stateDiagram-v2
         <div style="height:20px;"></div>
         <div style="font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:3px;color:var(--gray-500);margin-bottom:12px;text-transform:uppercase;">4.1.2 — Flag 초기화 규칙</div>
 
-        <div class="callout">
-          <div class="callout-label">⚠️ 초기화 누락 시 발생하는 문제</div>
-          <p>Flag가 초기화되지 않으면, <strong style="color:var(--off-white)">불러오기(챕터 재플레이)</strong>로 챕터에 재진입 시 Flag가 이미 <code style="font-family:'Courier Prime',monospace;font-size:12px;">true</code> 상태로 남아 있어 미니게임이 기동되지 않습니다. 성공·실패 양쪽 모두에서 반드시 초기화해야 합니다.</p>
+        <p class="prose" style="margin-bottom:16px;">
+          트리거 Flag를 읽는 시스템은 현재 <strong>미니게임 시스템(4장)</strong>과 <strong>독백 시스템(7장)</strong> 두 곳입니다.
+          연출(8장)·오디오(10장)는 Flag를 사용하지 않습니다.
+          챕터 재진입 시 두 시스템의 Flag를 함께 초기화하여 독백과 미니게임 모두 처음부터 재생되도록 보장합니다.
+        </p>
+
+        <div class="callout" style="margin-bottom:16px;">
+          <div class="callout-label">초기화 누락 시 발생하는 문제</div>
+          <p>Flag가 초기화되지 않으면 <strong style="color:var(--off-white);">불러오기(챕터 재플레이)</strong>로 챕터 재진입 시 Flag가 이미 <code style="font-family:'Courier Prime',monospace;font-size:12px;">true</code> 상태로 남아 있어 미니게임과 독백이 기동되지 않습니다.</p>
         </div>
 
-        <div style="height:16px;"></div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>초기화 시점</th><th>Flag 상태 변화</th><th>이유</th></tr></thead>
+            <thead>
+              <tr><th>초기화 시점</th><th>발생 조건</th><th>초기화 범위</th><th>비고</th></tr>
+            </thead>
             <tbody>
               <tr>
-                <td><strong>챕터 CHECKPOINT_WRITE</strong><br><span style="font-size:11px;color:var(--gray-500);">챕터 최초 진입 시</span></td>
-                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">true → false</code></td>
-                <td>새 챕터 시작 시 항상 초기 상태 보장</td>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">LOADING</code></td>
+                <td>챕터 로드 시 — 일반 진행(이전 챕터 → 다음 챕터) 및 불러오기(챕터 선택 재플레이) 모두 동일하게 처리</td>
+                <td>해당 챕터 소속 트리거 Flag 전체<br><span style="font-size:11px;color:var(--gray-500);">(미니게임 + 독백)</span></td>
+                <td>불러오기도 결국 LOADING을 거치므로 별도 처리 불필요</td>
               </tr>
               <tr>
-                <td><strong>미니게임 SUCCESS</strong></td>
-                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">true → false</code></td>
-                <td>성공 후 다음 시퀀스로 이행. 동일 챕터 재진입 시 재기동 가능.</td>
-              </tr>
-              <tr>
-                <td><strong>미니게임 FAIL → CHECKPOINT_READ</strong></td>
-                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">true → false</code></td>
-                <td>챕터 재시작 시 트리거가 다시 발동될 수 있도록 초기화</td>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">CHECKPOINT_READ</code></td>
+                <td>미니게임 실패 후 챕터 재진입</td>
+                <td>해당 챕터 소속 트리거 Flag 전체<br><span style="font-size:11px;color:var(--gray-500);">(미니게임 + 독백)</span></td>
+                <td>실패 후 재시도 시 독백·미니게임 모두 처음부터 재생</td>
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <div class="callout" style="margin-top:16px;">
+          <div class="callout-label">초기화 범위 원칙</div>
+          <p>현재 진입하는 챕터 소속 Flag만 초기화합니다. 다른 챕터의 Flag는 건드리지 않습니다. 새로운 시스템이 Flag를 읽어야 할 경우 위 표의 초기화 범위에 추가합니다.</p>
         </div>
 
         <div style="height:20px;"></div>
@@ -1551,7 +1863,7 @@ stateDiagram-v2
 
         <div class="info-block">
           <div class="info-block-title">개요</div>
-          <div class="info-row"><div class="info-key">상황</div><div class="info-val">어머니가 적외선 전열기구를 켜놓고 방을 나간다. 방치된 열기구로 인해 화상으로 사망하기 전에 코드를 뽑아야 한다.</div></div>
+          <div class="info-row"><div class="info-key">상황</div><div class="info-val">→ <a href="#" style="color:var(--red);">시나리오 기획서 CH_01</a> 참조</div></div>
           <div class="info-row"><div class="info-key">목표</div><div class="info-val">제한 시간 내에 전열기구 전원 코드를 소켓에서 뽑기</div></div>
           <div class="info-row"><div class="info-key">조작</div><div class="info-val">방향키로 손을 코드 방향으로 이동 → 코드 접촉 후 마우스 휠 Up (PULL_PUSH)</div></div>
           <div class="info-row"><div class="info-key">피해 유형</div><div class="info-val">화상 — 시간 경과에 따라 점진적으로 <a href="#ch5-2" style="color:var(--red);">화상 단계</a> 상승</div></div>
@@ -1577,7 +1889,7 @@ stateDiagram-v2
 
         <div class="info-block">
           <div class="info-block-title">개요</div>
-          <div class="info-row"><div class="info-key">상황</div><div class="info-val">거머리가 팔에 붙어 플레이어 카메라(눈)를 향해 기어온다. Arrow Key Error의 바퀴벌레 연출과 유사한 카메라 접근 공포 연출이 메인입니다. 과다출혈로 사망하기 전에 거머리를 떼어내야 합니다.</div></div>
+          <div class="info-row"><div class="info-key">상황</div><div class="info-val">→ <a href="#" style="color:var(--red);">시나리오 기획서 CH_02</a> 참조</div></div>
           <div class="info-row"><div class="info-key">목표</div><div class="info-val">카메라까지 기어오는 거머리를 방향키와 마우스 휠로 떼어내기 — 전체 거머리 제거 시 성공</div></div>
           <div class="info-row"><div class="info-key">조작</div><div class="info-val">방향키 + 마우스 휠 조합으로 거머리 위치에 손을 맞추고 떼어내기 (PULL_PUSH)</div></div>
           <div class="info-row"><div class="info-key">피해 유형</div><div class="info-val">흡혈 — 거머리가 부착된 시간에 비례하여 <a href="#ch5-2" style="color:var(--red);">피해 단계</a> 누적</div></div>
@@ -1603,7 +1915,7 @@ stateDiagram-v2
 
         <div class="info-block">
           <div class="info-block-title">개요</div>
-          <div class="info-row"><div class="info-key">상황</div><div class="info-val">어머니가 반응이 없는 환자를 보며 불안해한다. 살아있음을 증명하지 못하면 더 극단적인 치료를 시작한다.</div></div>
+          <div class="info-row"><div class="info-key">상황</div><div class="info-val">→ <a href="#" style="color:var(--red);">시나리오 기획서 CH_03</a> 참조</div></div>
           <div class="info-row"><div class="info-key">목표</div><div class="info-val">제한 시간 내에 손을 일정 높이까지 들어올려 어머니에게 보여주기</div></div>
           <div class="info-row"><div class="info-key">조작</div><div class="info-val">마우스 휠 Up 연속 입력 (WAVE) — 손이 목표 높이에 도달하면 성공</div></div>
           <div class="info-row"><div class="info-key">피해 유형</div><div class="info-val">공포 압박 — 시간 초과 시 어머니가 더 강도 높은 행동을 하여 <a href="#ch5-2" style="color:var(--red);">피해 단계</a> 누적</div></div>
@@ -1635,7 +1947,7 @@ stateDiagram-v2
 
         <div class="info-block">
           <div class="info-block-title">개요</div>
-          <div class="info-row"><div class="info-key">상황</div><div class="info-val">어머니가 잠든 틈에 다이얼 전화기로 도움을 요청하려 한다. 전화할 번호를 알아내고 조용히 연결해야 한다.</div></div>
+          <div class="info-row"><div class="info-key">상황</div><div class="info-val">→ <a href="#" style="color:var(--red);">시나리오 기획서 CH_04</a> 참조</div></div>
           <div class="info-row"><div class="info-key">목표</div><div class="info-val">도움을 요청할 번호를 알아내어 다이얼 전화기로 연결하기. 번호를 알아내는 구체적인 방식은 <span class="wip">[WIP]</span> 시나리오 작성 후 확정.</div></div>
           <div class="info-row"><div class="info-key">조작</div><div class="info-val">방향키로 손을 다이얼에 이동 → 마우스 휠로 다이얼 회전 (ROTATE)</div></div>
           <div class="info-row"><div class="info-key">피해 유형</div><div class="info-val">각성 — 소음 발생 또는 시간 초과 시 어머니가 깨어나 <a href="#ch5-2" style="color:var(--red);">피해 단계</a> 누적</div></div>
@@ -1646,7 +1958,7 @@ stateDiagram-v2
           <table>
             <thead><tr><th>파라미터</th><th>값</th><th>설명</th><th>비고</th></tr></thead>
             <tbody>
-              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:12px;">TargetNumber</code></td><td><span class="tbd">[TBD]</span></td><td>입력해야 하는 전화번호</td><td>시나리오 확정 후 결정</td></tr>
+              <tr><td><code style="font-family:'Courier Prime',monospace;font-size:12px;">TargetNumber</code></td><td><span class="tbd">[TBD]</span></td><td>입력해야 하는 전화번호</td><td>삼촌 행크(Hank Caldwell)의 번호. 시나리오 확정 후 결정.</td></tr>
               <tr><td><code style="font-family:'Courier Prime',monospace;font-size:12px;">RotateScrollPerStep</code></td><td><span class="tbd">[TBD]</span></td><td>다이얼 1단계 이동에 필요한 휠 스크롤 수</td><td>느린 조작 유지</td></tr>
               <tr><td><code style="font-family:'Courier Prime',monospace;font-size:12px;">NoiseThreshold</code></td><td><span class="tbd">[TBD]</span></td><td>소음 발생 판정 기준 (빠른 스크롤 속도 감지)</td><td>과도한 스크롤 시 어머니 각성</td></tr>
               <tr><td><code style="font-family:'Courier Prime',monospace;font-size:12px;">DamageInterval</code></td><td><span class="tbd">[TBD]</span></td><td>각성 후 피해 누적 주기 (초)</td><td><a href="#ch5-4" style="color:var(--red);">5.4 피해 데이터 테이블</a> 연동</td></tr>
@@ -2024,70 +2336,39 @@ stateDiagram-v2
         </div>
       </div>
 
-      <!-- 7.3 CSV 데이터 구조 -->
+      <!-- 7.3 대사 데이터 파일 -->
       <div class="subsection" id="ch7-3">
-        <div class="subsection-title"><span class="subsection-num">7.3</span>CSV 데이터 구조</div>
-        <p class="prose" style="margin-bottom:16px;">대사 데이터는 <code style="font-family:'Courier Prime',monospace;font-size:13px;">dialogue_data.csv</code>로 관리합니다. 스크립트 수정 시 재빌드 없이 파일만 교체합니다. <code style="font-family:'Courier Prime',monospace;font-size:13px;">trigger</code> 컬럼은 반드시 <a href="#ch7-2" style="color:var(--red);">7.2 네이밍 규칙</a>을 따릅니다.</p>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>컬럼</th><th>타입</th><th>필수</th><th>설명</th><th>예시</th></tr></thead>
-            <tbody>
-              <tr>
-                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">id</code></td>
-                <td>string</td><td>✓</td>
-                <td>대사 고유 ID</td>
-                <td><code style="font-family:'Courier Prime',monospace;font-size:11px;color:var(--gray-400);">DLG_CH01_001</code></td>
-              </tr>
-              <tr>
-                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">chapter</code></td>
-                <td>string</td><td>✓</td>
-                <td>소속 챕터 ID</td>
-                <td><code style="font-family:'Courier Prime',monospace;font-size:11px;color:var(--gray-400);">CH_01</code></td>
-              </tr>
-              <tr>
-                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">trigger</code></td>
-                <td>string</td><td>✓</td>
-                <td>출력 트리거 이벤트 ID (3장 챕터 상태 기준)</td>
-                <td><code style="font-family:'Courier Prime',monospace;font-size:11px;color:var(--gray-400);">CH_01_MONOLOGUE_START</code></td>
-              </tr>
-              <tr>
-                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">order</code></td>
-                <td>int</td><td>✓</td>
-                <td>동일 트리거 내 출력 순서</td>
-                <td><code style="font-family:'Courier Prime',monospace;font-size:11px;color:var(--gray-400);">1</code></td>
-              </tr>
-              <tr>
-                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">text_kr</code></td>
-                <td>string</td><td>✓</td>
-                <td>한국어 독백 텍스트</td>
-                <td><code style="font-family:'Courier Prime',monospace;font-size:11px;color:var(--gray-400);">또 오는구나…</code></td>
-              </tr>
-              <tr>
-                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">text_en</code></td>
-                <td>string</td><td></td>
-                <td>영어 텍스트 (현지화)</td>
-                <td><span class="tbd">[TBD]</span></td>
-              </tr>
-              <tr>
-                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">text_jp</code></td>
-                <td>string</td><td></td>
-                <td>일본어 텍스트 (현지화)</td>
-                <td><span class="tbd">[TBD]</span></td>
-              </tr>
-              <tr>
-                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">display_time</code></td>
-                <td>float</td><td></td>
-                <td>텍스트 화면 유지 시간(초). 미입력 시 기본값 적용</td>
-                <td><code style="font-family:'Courier Prime',monospace;font-size:11px;color:var(--gray-400);">3.0</code></td>
-              </tr>
-              <tr>
-                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">audio_id</code></td>
-                <td>string</td><td></td>
-                <td>연동 보이스 에셋 ID. 미입력 시 텍스트만 출력</td>
-                <td><span class="tbd">[TBD]</span></td>
-              </tr>
-            </tbody>
-          </table>
+        <div class="subsection-title"><span class="subsection-num">7.3</span>대사 데이터 파일</div>
+
+        <div class="info-block">
+          <div class="info-block-title">관리 파일 정보</div>
+          <div class="info-row">
+            <div class="info-key">파일명</div>
+            <div class="info-val"><code style="font-family:'Courier Prime',monospace;font-size:13px;">dialogue_data.xlsx</code></div>
+          </div>
+          <div class="info-row">
+            <div class="info-key">용도</div>
+            <div class="info-val">플레이어 독백 전체 스크립트 관리. 개발 시 xlsx → csv 변환 후 UE5 런타임 로드.</div>
+          </div>
+          <div class="info-row">
+            <div class="info-key">시트 구성</div>
+            <div class="info-val">
+              <strong>dialogue_data</strong> — 실제 대사 데이터<br>
+              <strong>📋 작성 가이드</strong> — 컬럼 설명 및 작성 규칙
+            </div>
+          </div>
+          <div class="info-row">
+            <div class="info-key">컬럼</div>
+            <div class="info-val">id / chapter / trigger / order / text_kr / text_en / text_jp / display_time / audio_id / 비고</div>
+          </div>
+          <div class="info-row">
+            <div class="info-key">트리거 ID 규칙</div>
+            <div class="info-val"><a href="#ch1-4" style="color:var(--red);">1.4 트리거 ID 네이밍 규칙</a> 참조. trigger 컬럼은 반드시 이 규칙을 따릅니다.</div>
+          </div>
+          <div class="info-row">
+            <div class="info-key">현재 상태</div>
+            <div class="info-val">샘플 데이터 17행 작성 완료. 시나리오 확정 후 전량 입력 예정.</div>
+          </div>
         </div>
       </div>
 
@@ -2481,7 +2762,49 @@ flowchart TD
           </thead>
           <tbody>
             <tr>
-              <td style="font-family:'Courier Prime',monospace;">v1.0</td>
+              <td style="font-family:'Courier Prime',monospace;">v2.9</td>
+              <td><span class="chip chip-done" style="font-size:10px;">수정</span></td>
+              <td>4.5 TargetNumber / 2.3.2 오브젝트 타입</td>
+              <td>삼촌 이름 미기재 / PLAYBACK 타입 없음</td>
+              <td>TargetNumber 비고에 행크 칼드웰 명시. PLAYBACK 오브젝트 타입 추가 (자동응답기 전용).</td>
+              <td>시나리오 기획서 설정 반영</td>
+            </tr>
+              <td><span class="chip chip-done" style="font-size:10px;">수정</span></td>
+              <td>4.2~4.5 상황 설명 / 3.1 챕터 비고 / 1.2 관련 문서</td>
+              <td>서사적 상황 설명 직접 기술</td>
+              <td>시나리오 기획서 참조 링크로 교체. 1.2에 시나리오 기획서 항목 추가.</td>
+              <td>시나리오 기획서 분리 반영</td>
+            </tr>
+              <td><span class="chip chip-done" style="font-size:10px;">추가</span></td>
+              <td>1.1 — 출시 가격 · 목표 플레이타임 확정</td>
+              <td>미기재</td>
+              <td>출시 가격 ₩12,000 / $9.99 / ¥1,100 확정. 목표 플레이타임 3시간 확정.</td>
+              <td></td>
+            </tr>
+              <td><span class="chip chip-done" style="font-size:10px;">수정</span></td>
+              <td>7.3 — 대사 데이터 구조 → 파일 참조로 교체</td>
+              <td>CSV 컬럼 상세 테이블</td>
+              <td>dialogue_data.xlsx 파일명·용도·시트 구성·컬럼 요약으로 간소화. 1.2 관련 문서 목록도 xlsx로 업데이트.</td>
+              <td></td>
+            </tr>
+              <td><span class="chip chip-done" style="font-size:10px;">수정</span></td>
+              <td>4.1.2 — Flag 초기화 규칙</td>
+              <td>CHECKPOINT_WRITE·SUCCESS·FAIL 3개 시점</td>
+              <td>LOADING·CHECKPOINT_READ 2개 시점으로 통합. 독백 Flag 동시 초기화 명시. 초기화 범위 원칙 추가.</td>
+              <td></td>
+            </tr>
+              <td><span class="chip chip-done" style="font-size:10px;">수정</span></td>
+              <td>1.1 — 팀 구성 변경</td>
+              <td>강동완(프로그래밍·3D), 박지민(아트·이펙트) 2인</td>
+              <td>강동완(3D모델링), 박지민(이펙트·셰이더), 김재현(기획), 장규봉(프로그래밍) 4인으로 확대</td>
+              <td></td>
+            </tr>
+              <td><span class="chip chip-done" style="font-size:10px;">추가</span></td>
+              <td>1.4 트리거 ID 네이밍 규칙</td>
+              <td>미존재</td>
+              <td>구조·챕터prefix·대상·동작 키워드·확정 ID 18개 전체 목록 신설. GLOBAL prefix 미사용 결정 명시.</td>
+              <td></td>
+            </tr>
               <td><span class="chip chip-done" style="font-size:10px;">추가</span></td>
               <td>문서 최초 작성</td>
               <td>—</td>
@@ -2694,7 +3017,7 @@ flowchart TD
     </div>
 
     <div class="footer">
-      MOTHER. PLEASE — 시스템 기획서 v2.2 · 쿠마마루 · 내부 개발 전용 문서
+      MOTHER. PLEASE — 시스템 기획서 v2.9 · 쿠마마루 · 내부 개발 전용 문서
     </div>
 
   </main>
@@ -2734,6 +3057,31 @@ flowchart TD
   }, { rootMargin: '-20% 0px -70% 0px' });
 
   sections.forEach(s => observer.observe(s));
+
+  // ─── 모바일 TOC 토글 ───
+  const toggle  = document.getElementById('toc-toggle');
+  const overlay = document.getElementById('toc-overlay');
+
+  function openTOC()  { document.body.classList.add('toc-open'); }
+  function closeTOC() { document.body.classList.remove('toc-open'); }
+
+  toggle.addEventListener('click', () => {
+    document.body.classList.contains('toc-open') ? closeTOC() : openTOC();
+  });
+  overlay.addEventListener('click', closeTOC);
+
+  document.querySelectorAll('.sidebar a').forEach(link => {
+    link.addEventListener('click', e => {
+      e.preventDefault();
+      const target = document.querySelector(link.getAttribute('href'));
+      if (target) {
+        if (window.innerWidth <= 768) closeTOC();
+        setTimeout(() => {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, window.innerWidth <= 768 ? 280 : 0);
+      }
+    });
+  });
 </script>
 
 <!-- tags: 개요, 시스템, 문서구조 -->

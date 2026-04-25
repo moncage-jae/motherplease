@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MOTHER. PLEASE — 시나리오 기획서</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@300;400;500;700&family=Courier+Prime:wght@400;700&display=swap');
+
+  :root {
+    --red: #C0392B;
+    --dark-red: #922B21;
+    --black: #0D0D0D;
+    --off-white: #F0EDE8;
+    --gray-100: #E8E5E0;
+    --gray-300: #B0ADA8;
+    --gray-400: #8A8785;
+    --gray-500: #6B6865;
+    --gray-600: #4A4845;
+    --gray-700: #3A3835;
+    --gray-800: #252320;
+    --gray-900: #1A1917;
+    --tbd-bg: rgba(255,140,0,0.12);
+    --tbd-border: rgba(255,140,0,0.5);
+    --tbd-text: #FFA040;
+    --wip-bg: rgba(100,160,255,0.1);
+    --wip-border: rgba(100,160,255,0.4);
+    --wip-text: #7EB8F7;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body {
+    font-family:'Noto Sans KR',sans-serif;
+    background:var(--black);
+    color:var(--off-white);
+    line-height:1.7;
+    font-size:14px;
+  }
+  ::-webkit-scrollbar { width:4px; }
+  ::-webkit-scrollbar-track { background:var(--black); }
+  ::-webkit-scrollbar-thumb { background:var(--red); }
+
+  /* ─── HEADER ─── */
+  .doc-header {
+    background:var(--gray-900);
+    border-bottom:2px solid var(--red);
+    padding:10px 40px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    position:sticky; top:0; z-index:200;
+    gap:20px;
+  }
+  .doc-title-bar {
+    font-family:'Bebas Neue',sans-serif;
+    font-size:16px; letter-spacing:3px;
+    color:var(--off-white); white-space:nowrap;
+  }
+  .doc-title-bar span { color:var(--red); }
+  .doc-meta { display:flex; gap:16px; align-items:center; font-family:'Courier Prime',monospace; font-size:11px; color:var(--gray-300); }
+  .version { background:var(--red); color:white; padding:2px 8px; font-weight:700; font-size:11px; letter-spacing:1px; }
+  .doc-nav { display:flex; gap:4px; flex-wrap:wrap; justify-content:flex-end; }
+  .doc-nav a { color:var(--gray-500); text-decoration:none; font-size:11px; font-family:'Courier Prime',monospace; letter-spacing:1px; padding:3px 8px; border:1px solid transparent; transition:all 0.2s; white-space:nowrap; }
+  .doc-nav a:hover { color:var(--red); border-color:var(--gray-700); }
+  .doc-nav a.active { color:var(--red); border-color:var(--red); }
+
+  /* ─── LAYOUT ─── */
+  .layout { display:flex; min-height:100vh; }
+  .sidebar { width:220px; flex-shrink:0; background:var(--gray-900); border-right:1px solid var(--gray-700); position:sticky; top:45px; height:calc(100vh - 45px); overflow-y:auto; padding:24px 0; }
+  .sidebar::-webkit-scrollbar { width:2px; }
+  .sidebar-title { font-family:'Courier Prime',monospace; font-size:10px; letter-spacing:3px; color:var(--gray-500); padding:0 20px 12px; text-transform:uppercase; border-bottom:1px solid var(--gray-800); margin-bottom:8px; }
+  .sidebar-group { margin-bottom:4px; }
+  .sidebar-group-label { font-family:'Courier Prime',monospace; font-size:9px; letter-spacing:2px; color:var(--gray-600); padding:8px 20px 4px; text-transform:uppercase; }
+  .sidebar a { display:flex; align-items:flex-start; gap:8px; padding:6px 20px; text-decoration:none; color:var(--gray-400); font-size:12px; line-height:1.4; transition:all 0.15s; }
+  .sidebar a:hover { color:var(--off-white); background:rgba(255,255,255,0.03); }
+  .sidebar a.current { color:var(--red); background:rgba(192,57,43,0.08); }
+  .sidebar-num { font-family:'Courier Prime',monospace; font-size:10px; color:var(--red); flex-shrink:0; margin-top:1px; opacity:0.7; }
+
+  .main { flex:1; min-width:0; padding:60px 60px 100px; max-width:900px; }
+
+  /* ─── COVER ─── */
+  .cover { padding:60px 0 80px; border-bottom:2px solid var(--gray-700); margin-bottom:60px; }
+  .cover-type { font-family:'Courier Prime',monospace; font-size:11px; letter-spacing:4px; color:var(--red); text-transform:uppercase; margin-bottom:12px; }
+  .cover-title { font-family:'Bebas Neue',sans-serif; font-size:clamp(48px,6vw,80px); letter-spacing:4px; line-height:0.9; color:var(--off-white); margin-bottom:8px; }
+  .cover-title span { color:var(--red); }
+  .cover-subtitle { font-family:'Bebas Neue',sans-serif; font-size:24px; letter-spacing:6px; color:var(--gray-500); margin-bottom:40px; }
+  .cover-divider { width:60px; height:2px; background:var(--red); margin-bottom:32px; }
+  .cover-meta-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--gray-700); border:1px solid var(--gray-700); max-width:600px; }
+  .cover-meta-item { background:var(--gray-900); padding:16px 20px; }
+  .cover-meta-label { font-family:'Courier Prime',monospace; font-size:9px; letter-spacing:2px; color:var(--gray-500); text-transform:uppercase; margin-bottom:6px; }
+  .cover-meta-value { font-family:'Courier Prime',monospace; font-size:13px; color:var(--off-white); font-weight:700; }
+  .cover-meta-value.red { color:var(--red); }
+
+  /* ─── WARNING BANNER ─── */
+  .warning-banner { background:rgba(255,140,0,0.08); border:1px solid var(--tbd-border); border-left:3px solid var(--tbd-text); padding:14px 20px; margin-bottom:40px; font-family:'Courier Prime',monospace; font-size:12px; color:var(--tbd-text); letter-spacing:0.5px; }
+
+  /* ─── SECTION ─── */
+  .section { margin-bottom:80px; }
+  .section-header { margin-bottom:40px; }
+  .section-label { font-family:'Courier Prime',monospace; font-size:10px; letter-spacing:4px; color:var(--red); text-transform:uppercase; margin-bottom:6px; }
+  .section-title { font-family:'Bebas Neue',sans-serif; font-size:clamp(32px,4vw,48px); letter-spacing:3px; color:var(--off-white); line-height:1; margin-bottom:8px; }
+  .section-title span { color:var(--red); }
+  .section-desc { font-size:13px; color:var(--gray-400); max-width:600px; line-height:1.6; padding-top:12px; border-top:1px solid var(--gray-800); }
+
+  /* ─── SUBSECTION ─── */
+  .subsection { margin-bottom:48px; }
+  .subsection-title { font-family:'Courier Prime',monospace; font-size:14px; font-weight:700; color:var(--off-white); letter-spacing:1px; padding-bottom:8px; border-bottom:1px solid var(--gray-700); margin-bottom:20px; display:flex; align-items:center; gap:10px; }
+  .subsection-num { color:var(--red); font-size:11px; font-weight:400; }
+
+  /* ─── PROSE ─── */
+  .prose { font-size:14px; color:var(--gray-100); line-height:1.8; }
+  .prose+.prose { margin-top:12px; }
+  .prose strong { color:var(--off-white); font-weight:700; }
+  .prose em { color:var(--red); font-style:normal; }
+
+  /* ─── INFO BLOCK ─── */
+  .info-block { background:var(--gray-900); border:1px solid var(--gray-700); padding:24px 28px; margin:16px 0; }
+  .info-block-title { font-family:'Courier Prime',monospace; font-size:10px; letter-spacing:3px; color:var(--gray-500); text-transform:uppercase; margin-bottom:16px; }
+  .info-row { display:grid; grid-template-columns:140px 1fr; gap:0; border-bottom:1px solid var(--gray-800); padding:10px 0; font-size:13px; }
+  .info-row:last-child { border-bottom:none; }
+  .info-key { font-family:'Courier Prime',monospace; color:var(--gray-500); font-size:11px; letter-spacing:1px; padding-right:16px; padding-top:2px; }
+  .info-val { color:var(--off-white); }
+
+  /* ─── TABLE ─── */
+  .table-wrap { overflow-x:auto; margin:16px 0; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  thead tr { background:var(--gray-800); }
+  th { text-align:left; padding:10px 14px; font-family:'Courier Prime',monospace; font-size:10px; letter-spacing:2px; color:var(--gray-400); font-weight:400; border-bottom:1px solid var(--gray-700); white-space:nowrap; }
+  td { padding:10px 14px; border-bottom:1px solid var(--gray-800); color:var(--gray-300); vertical-align:top; }
+  tr:hover td { background:rgba(255,255,255,0.015); }
+  td strong { color:var(--off-white); }
+
+  /* ─── STATUS MARKERS ─── */
+  .status-tbd, .status-wip {
+    display:inline-block; font-family:'Courier Prime',monospace; font-size:11px; padding:1px 7px; letter-spacing:1px; border:1px solid;
+  }
+  .status-tbd { background:var(--tbd-bg); color:var(--tbd-text); border-color:var(--tbd-border); }
+  .status-wip { background:var(--wip-bg); color:var(--wip-text); border-color:var(--wip-border); }
+
+  /* ─── CALLOUT ─── */
+  .callout { border-left:3px solid var(--red); background:rgba(192,57,43,0.06); padding:16px 20px; margin:16px 0; }
+  .callout-label { font-family:'Courier Prime',monospace; font-size:10px; color:var(--red); letter-spacing:2px; text-transform:uppercase; margin-bottom:6px; }
+  .callout p { font-size:13px; color:var(--gray-300); line-height:1.7; }
+
+  /* ─── CHAPTER CARD ─── */
+  .chapter-card { background:var(--gray-900); border:1px solid var(--gray-700); margin-bottom:32px; }
+  .chapter-card-header { padding:20px 28px 16px; border-bottom:1px solid var(--gray-800); display:flex; align-items:center; gap:16px; }
+  .chapter-id { font-family:'Bebas Neue',sans-serif; font-size:28px; color:var(--red); letter-spacing:2px; line-height:1; flex-shrink:0; }
+  .chapter-title { font-family:'Bebas Neue',sans-serif; font-size:18px; color:var(--off-white); letter-spacing:2px; }
+  .chapter-type { font-family:'Courier Prime',monospace; font-size:10px; color:var(--gray-500); letter-spacing:2px; margin-top:2px; }
+  .chapter-card-body { padding:20px 28px; }
+  .chapter-row { display:grid; grid-template-columns:140px 1fr; gap:0; border-bottom:1px solid var(--gray-800); padding:12px 0; font-size:13px; }
+  .chapter-row:last-child { border-bottom:none; }
+  .chapter-key { font-family:'Courier Prime',monospace; color:var(--gray-500); font-size:11px; letter-spacing:1px; padding-right:16px; padding-top:2px; flex-shrink:0; }
+  .chapter-val { color:var(--gray-100); line-height:1.7; }
+
+  /* ─── ARC BADGE ─── */
+  .arc-badge { display:inline-block; font-family:'Courier Prime',monospace; font-size:10px; padding:2px 10px; letter-spacing:1px; }
+  .arc-0 { background:rgba(107,104,101,0.2); color:var(--gray-400); border:1px solid var(--gray-600); }
+  .arc-1 { background:rgba(192,57,43,0.1); color:#E8856A; border:1px solid rgba(192,57,43,0.3); }
+  .arc-2 { background:rgba(192,57,43,0.2); color:#D45A3A; border:1px solid rgba(192,57,43,0.5); }
+  .arc-3 { background:rgba(146,43,33,0.3); color:#C0392B; border:1px solid var(--red); }
+  .arc-4 { background:rgba(100,20,10,0.4); color:#FF6B47; border:1px solid #922B21; }
+
+  /* ─── DIVIDER ─── */
+  .divider { height:1px; background:var(--gray-800); margin:40px 0; }
+
+  /* ─── CHANGELOG ─── */
+  .changelog { margin-top:100px; padding-top:40px; border-top:2px solid var(--gray-700); }
+  .changelog-title { font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:3px; color:var(--gray-500); margin-bottom:20px; }
+
+  /* ─── FOOTER ─── */
+  .footer { margin-top:60px; padding:40px 0 60px; border-top:1px solid var(--gray-800); font-family:'Courier Prime',monospace; font-size:11px; color:var(--gray-600); letter-spacing:1px; }
+
+  /* ─── MOBILE ─── */
+  #toc-toggle { display:none; position:fixed; bottom:20px; right:20px; z-index:200; width:48px; height:48px; background:var(--gray-900); border:1px solid var(--red); border-radius:50%; cursor:pointer; align-items:center; justify-content:center; flex-direction:column; gap:5px; box-shadow:0 4px 20px rgba(0,0,0,0.5); transition:background 0.2s; }
+  #toc-toggle span { display:block; width:20px; height:2px; background:var(--off-white); border-radius:2px; transition:all 0.25s; }
+  body.toc-open #toc-toggle span:nth-child(1) { transform:translateY(7px) rotate(45deg); }
+  body.toc-open #toc-toggle span:nth-child(2) { opacity:0; }
+  body.toc-open #toc-toggle span:nth-child(3) { transform:translateY(-7px) rotate(-45deg); }
+  #toc-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:99; backdrop-filter:blur(2px); }
+  body.toc-open #toc-overlay { display:block; }
+
+  @media (max-width:768px) {
+    .doc-header { padding:10px 16px; flex-wrap:wrap; gap:6px; }
+    .doc-nav { display:none; }
+    .sidebar { position:fixed; top:0; left:0; height:100vh; z-index:150; transform:translateX(-100%); transition:transform 0.28s cubic-bezier(0.4,0,0.2,1); width:260px; }
+    body.toc-open .sidebar { transform:translateX(0); }
+    #toc-toggle { display:flex; }
+    .main { padding:24px 16px 80px; max-width:100%; }
+    .cover-title { font-size:48px; }
+    .cover-meta-grid { grid-template-columns:1fr 1fr; max-width:100%; }
+    .section-title { font-size:28px; }
+    .table-wrap { overflow-x:auto; margin:12px -16px; padding:0 16px; }
+    .table-wrap::after { content:'← 표를 좌우로 스크롤하세요'; display:block; font-size:10px; color:var(--gray-600); text-align:right; padding:4px 0 0; }
+    table { min-width:520px; }
+    .chapter-row { grid-template-columns:110px 1fr; }
+    .info-row { grid-template-columns:110px 1fr; }
+  }
+  @media (max-width:420px) {
+    .cover-title { font-size:36px; }
+    .chapter-id { font-size:22px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="toc-overlay"></div>
+<button id="toc-toggle" aria-label="목차 열기">
+  <span></span><span></span><span></span>
+</button>
+
+<!-- HEADER -->
+<header class="doc-header">
+  <div class="doc-title-bar">MOTHER.<span>PLEASE</span> — 시나리오 기획서</div>
+  <div class="doc-meta">
+    <span class="version">v1.1.0</span>
+    <span class="doc-date">2026-03-15</span>
+    <span class="doc-author">쿠마마루</span>
+  </div>
+  <nav class="doc-nav">
+    <a href="#ch1">01.개요</a>
+    <a href="#ch2">02.세계관</a>
+    <a href="#ch3">03.인물</a>
+    <a href="#ch4">04.서사구조</a>
+    <a href="#ch5">05.챕터시나리오</a>
+    <a href="#ch6">06.대사스크립트</a>
+    <a href="#ch7">07.연출스크립트</a>
+  </nav>
+</header>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-title">목차 / TOC</div>
+    <div class="sidebar-group">
+      <div class="sidebar-group-label">완성</div>
+      <a href="#ch1" class="current"><span class="sidebar-num">01</span>문서 개요</a>
+      <a href="#ch2"><span class="sidebar-num">02</span>세계관 설정</a>
+      <a href="#ch3"><span class="sidebar-num">03</span>인물 설정</a>
+      <a href="#ch4"><span class="sidebar-num">04</span>전체 서사 구조</a>
+      <a href="#ch5"><span class="sidebar-num">05</span>챕터별 시나리오</a>
+    </div>
+    <div class="sidebar-group">
+      <div class="sidebar-group-label">WIP</div>
+      <a href="#ch6"><span class="sidebar-num">06</span>대사 스크립트</a>
+      <a href="#ch7"><span class="sidebar-num">07</span>연출 스크립트</a>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- COVER -->
+    <div class="cover">
+      <div class="cover-type">Internal Story Document · 내부 시나리오 문서</div>
+      <div class="cover-title">MOTHER.<span>PLEASE</span></div>
+      <div class="cover-subtitle">시나리오 기획서</div>
+      <div class="cover-divider"></div>
+      <div class="cover-meta-grid">
+        <div class="cover-meta-item">
+          <div class="cover-meta-label">VERSION</div>
+          <div class="cover-meta-value red">v1.1.0</div>
+        </div>
+        <div class="cover-meta-item">
+          <div class="cover-meta-label">DATE</div>
+          <div class="cover-meta-value">2026-03-15</div>
+        </div>
+        <div class="cover-meta-item">
+          <div class="cover-meta-label">STUDIO</div>
+          <div class="cover-meta-value">쿠마마루</div>
+        </div>
+        <div class="cover-meta-item">
+          <div class="cover-meta-label">STATUS</div>
+          <div class="cover-meta-value">WIP</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="warning-banner">
+      ⚠️ 미완성 항목 2건 포함 (TBD 0, WIP 2, 검토필요 0)
+      — 6장 대사 스크립트 / 7장 연출 스크립트는 집필 후 별도 제공 예정.
+    </div>
+
+    <!-- ═══ CH 1. 문서 개요 ═══ -->
+    <section class="section" id="ch1">
+      <div class="section-header">
+        <div class="section-label">Chapter 01</div>
+        <h2 class="section-title">문서 <span>개요</span></h2>
+        <p class="section-desc">이 문서의 목적, 범위, 관련 문서 및 작성 원칙을 정의합니다.</p>
+      </div>
+
+      <div class="subsection" id="ch1-1">
+        <div class="subsection-title"><span class="subsection-num">1.1</span>목적 및 범위</div>
+        <div class="info-block">
+          <div class="info-block-title">Document Info</div>
+          <div class="info-row"><div class="info-key">문서 유형</div><div class="info-val">내부 시나리오 기획서 (Internal Scenario Design Document)</div></div>
+          <div class="info-row"><div class="info-key">대상 독자</div><div class="info-val">김재현 (기획), 강동완 (3D모델링), 박지민 (이펙트·셰이더), 장규봉 (프로그래밍)</div></div>
+          <div class="info-row"><div class="info-key">작성 목적</div><div class="info-val">MOTHER. PLEASE의 세계관·인물·서사 구조·챕터별 시나리오 방향을 정의한다. 실제 텍스트 대사는 별도 집필 후 dialogue_data.xlsx에 입력한다.</div></div>
+          <div class="info-row"><div class="info-key">적용 범위</div><div class="info-val">세계관 / 인물 설정 / 전체 서사 구조 / 챕터별 시나리오 방향 / 대사·연출 스크립트 작성 방침</div></div>
+          <div class="info-row"><div class="info-key">제외 범위</div><div class="info-val">게임 시스템 명세 (시스템 기획서 참조) / 완성된 대사 텍스트 (dialogue_data.xlsx 참조)</div></div>
+        </div>
+      </div>
+
+      <div class="subsection" id="ch1-2">
+        <div class="subsection-title"><span class="subsection-num">1.2</span>관련 문서 목록</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>문서명</th><th>파일명</th><th>유형</th><th>비고</th></tr></thead>
+            <tbody>
+              <tr><td><strong>시스템 기획서</strong></td><td><span style="font-family:'Courier Prime',monospace;font-size:11px;color:var(--gray-500);">mother_please_system_design.html</span></td><td>시스템</td><td>챕터 구조·트리거·미니게임 등 구현 명세</td></tr>
+              <tr><td><strong>시나리오 기획서</strong></td><td><span style="font-family:'Courier Prime',monospace;font-size:11px;color:var(--gray-500);">mother_please_scenario.html</span></td><td>시나리오</td><td>본 문서</td></tr>
+              <tr><td><strong>대사 데이터</strong></td><td><span style="font-family:'Courier Prime',monospace;font-size:11px;color:var(--gray-500);">dialogue_data.xlsx</span></td><td>데이터</td><td>집필 완료 후 입력. 샘플 17행 기작성.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="subsection" id="ch1-3">
+        <div class="subsection-title"><span class="subsection-num">1.3</span>작성 원칙</div>
+        <div class="callout">
+          <div class="callout-label">방향 기술 vs 실제 텍스트</div>
+          <p>이 문서는 <strong style="color:var(--off-white);">시나리오의 의도와 방향</strong>을 기술합니다. "어머니가 무엇을 하는가", "플레이어가 무엇을 느껴야 하는가"를 정의하되, 실제 대사 문장은 작성하지 않습니다. 완성된 대사 텍스트는 집필 후 <strong style="color:var(--off-white);">dialogue_data.xlsx</strong>에 직접 입력합니다.</p>
+        </div>
+        <div style="height:12px;"></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>작성 대상</th><th>이 문서에 포함</th><th>처리 방식</th></tr></thead>
+            <tbody>
+              <tr><td>장면 의도·분위기</td><td><span style="color:#58C97A;">✓</span></td><td>본문에 서술</td></tr>
+              <tr><td>인물 심리 상태</td><td><span style="color:#58C97A;">✓</span></td><td>본문에 서술</td></tr>
+              <tr><td>연출 방향 (무엇이 일어나는가)</td><td><span style="color:#58C97A;">✓</span></td><td>본문에 서술</td></tr>
+              <tr><td>완성된 대사 텍스트</td><td><span style="color:var(--red);">✗</span></td><td>dialogue_data.xlsx 입력</td></tr>
+              <tr><td>완성된 연출 타임라인</td><td><span style="color:var(--red);">✗</span></td><td>direction_script.xlsx 입력</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ CH 2. 세계관 설정 ═══ -->
+    <section class="section" id="ch2">
+      <div class="section-header">
+        <div class="section-label">Chapter 02</div>
+        <h2 class="section-title">세계관 <span>설정</span></h2>
+        <p class="section-desc">게임이 펼쳐지는 시공간과 그 안에서 작동하는 초자연적 존재를 정의합니다.</p>
+      </div>
+
+      <div class="subsection" id="ch2-1">
+        <div class="subsection-title"><span class="subsection-num">2.1</span>시대·공간 배경</div>
+        <div class="info-block">
+          <div class="info-block-title">배경 설정</div>
+          <div class="info-row"><div class="info-key">시대</div><div class="info-val">1955년 미국 시골</div></div>
+          <div class="info-row"><div class="info-key">공간</div><div class="info-val">2층짜리 단독 주택. 플레이 시점은 <strong>2층 주인공 침실 겸 병실</strong>. 플레이어는 이 방 밖을 나갈 수 없다.</div></div>
+          <div class="info-row"><div class="info-key">창밖 풍경</div><div class="info-val">마당의 나뭇가지 일부. 나무 그림자가 창가에 드리운다. 다른 집은 보이지 않는다. 멀리 언덕 부근에 작은 교회가 보인다.</div></div>
+          <div class="info-row"><div class="info-key">시설 수준</div><div class="info-val">현대화된 가옥. 삼촌 행크의 지원으로 일반 시골 가정에서 볼 수 없는 최신 물품이 혼재한다. (테이프형 자동응답기, 링거 등)</div></div>
+          <div class="info-row"><div class="info-key">분위기</div><div class="info-val">표면적으로 따뜻하고 정돈된 가정. 시간이 지날수록 같은 공간이 점점 다르게 보인다.</div></div>
+          <div class="info-row"><div class="info-key">에스테틱 기준</div><div class="info-val">하이퍼 로우폴리, 저채도. 게임 소개서 레퍼런스 참조.</div></div>
+        </div>
+        <div class="callout" style="margin-top:16px;">
+          <div class="callout-label">시대 설정의 의도</div>
+          <p>1955년 미국 시골은 현대의학이 도시 중심으로 보급되던 과도기입니다. 시골 주민들에게 의학적 신뢰는 아직 낮았고, 민간요법·대체의학·종교가 혼재했습니다. 애니의 치료 방식이 민간요법에서 종교로 이행하는 과정이 이 배경에서 자연스럽게 받아들여집니다. 또한 전쟁 직후 시대적 상실감이 바르바탄의 침투를 더 쉽게 만드는 토양이 됩니다.</p>
+        </div>
+      </div>
+
+      <div class="subsection" id="ch2-2">
+        <div class="subsection-title"><span class="subsection-num">2.2</span>바르바탄 설정</div>
+
+        <div style="font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:3px;color:var(--gray-500);margin-bottom:12px;text-transform:uppercase;">2.2.1 — 정의 및 현재 상태</div>
+        <div class="info-block">
+          <div class="info-row"><div class="info-key">이름</div><div class="info-val">바르바탄 (Barbatan)</div></div>
+          <div class="info-row"><div class="info-key">정체</div><div class="info-val">고대부터 존재해 온 악신. 피의 공물과 어둠의 의식을 통해 숭배받던 존재.</div></div>
+          <div class="info-row"><div class="info-key">현재 상태</div><div class="info-val">1955년 기준, 민간 종교의 소실과 산업화로 추종자 대부분을 잃고 극도로 약해진 상태. 그의 종교는 제대로 된 신관조차 없이 간간히 골동품점의 낡은 책으로만 이어지고 있다.</div></div>
+          <div class="info-row"><div class="info-key">핵심 원칙</div><div class="info-val">바르바탄이 애니를 타락시킨 것이 아니다. 바르바탄은 애니의 절박함을 발견하고, 그녀가 스스로 걸어오도록 조심스럽게 방향을 틀었을 뿐이다.</div></div>
+        </div>
+
+        <div style="height:20px;"></div>
+        <div style="font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:3px;color:var(--gray-500);margin-bottom:12px;text-transform:uppercase;">2.2.2 — 애니를 선택한 이유</div>
+        <p class="prose" style="margin-bottom:12px;">약해진 바르바탄에게 애니는 수백 년 만에 나타난 기회였습니다. 그는 애니에게서 두 가지를 감지했습니다. <strong>강한 욕망</strong>(아들을 살리겠다는 집착에 가까운 의지)과 <strong>방향의 가능성</strong>(그 헌신이 조금만 비틀리면 자신에게 향할 수 있다는 것). 바르바탄은 오랜 공백 끝에 신관을 찾은 기쁨을 억누르고, 매우 신중하고 조심스럽게 접근하기로 했습니다. 서두르면 놓친다. 조금씩, 천천히, 그녀의 정신을 갉아먹기로.</p>
+
+        <div class="callout">
+          <div class="callout-label">바르바탄의 전략</div>
+          <p>바르바탄은 애니에게 직접 나타나지 않습니다. 그는 단지 애니의 절박함이 자라는 것을 지켜보며, 그 방향이 자신을 향하도록 <strong style="color:var(--off-white);">아주 미세하게</strong> 개입합니다. 애니가 치료에 실패할 때마다 그녀의 믿음이 더 맹목적이 되도록, 성공처럼 보이는 순간을 만들어 확신을 강화합니다. 플레이어는 이 과정을 목격하지만, 증명할 수 없습니다.</p>
+        </div>
+
+        <div style="height:20px;"></div>
+        <div style="font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:3px;color:var(--gray-500);margin-bottom:12px;text-transform:uppercase;">2.2.3 — 연출 방침</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>원칙</th><th>내용</th></tr></thead>
+            <tbody>
+              <tr><td><strong>플레이어 단독 인지</strong></td><td>바르바탄의 현현은 플레이어(토마스)만 볼 수 있다. 애니는 보지 못한다.</td></tr>
+              <tr><td><strong>점진적 현현</strong></td><td>게임 초반에는 등장하지 않는다. 애니의 종교적 확신이 강해질수록 더 명확하게 나타난다.</td></tr>
+              <tr><td><strong>직접 행동 없음</strong></td><td>바르바탄은 직접 토마스를 해치거나 움직이지 않는다. 존재만으로 공포를 유발한다.</td></tr>
+              <tr><td><strong>형태 미정</strong></td><td>바르바탄의 구체적인 형태는 연출 작업 시 확정한다. <span class="status-tbd">[TBD]</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="table-wrap" style="margin-top:16px;">
+          <table>
+            <thead><tr><th>등장 챕터</th><th>형태</th><th>지속</th><th>애니 인지</th></tr></thead>
+            <tbody>
+              <tr><td>CH_OPENING ~ CH_01</td><td>등장 없음</td><td>—</td><td>—</td></tr>
+              <tr><td>CH_02 미니게임 후</td><td>환각 — 천장의 무언가 (1회, 짧음)</td><td>1~2초, 즉시 사라짐</td><td>인지 못함</td></tr>
+              <tr><td>CH_03 미니게임 후</td><td>애니 그림자 변형 (조금 더 선명)</td><td>2~3초</td><td>인지 못함</td></tr>
+              <tr><td>CH_ENDING</td><td>애니와 겹쳐 보임 (완전히 드러남)</td><td>사라지지 않음</td><td>이미 심취 상태</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="subsection" id="ch2-3">
+        <div class="subsection-title"><span class="subsection-num">2.3</span>공간 설정 상세</div>
+
+        <div style="font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:3px;color:var(--gray-500);margin-bottom:12px;text-transform:uppercase;">2.3.1 — 방 구성</div>
+        <div class="info-block">
+          <div class="info-row"><div class="info-key">위치</div><div class="info-val">2층 주택의 2층. 토마스의 침실 겸 병실.</div></div>
+          <div class="info-row"><div class="info-key">창문</div><div class="info-val">마당의 나뭇가지 일부가 보인다. 나무 그림자가 창가에 드리우며 시간의 흐름을 암시. 멀리 언덕에 작은 교회가 보인다. 다른 집은 보이지 않는다.</div></div>
+          <div class="info-row"><div class="info-key">분위기</div><div class="info-val">창밖 구름을 바라보는 것이 토마스의 거의 유일한 오락이다. 방은 토마스의 세계 전부다.</div></div>
+        </div>
+
+        <div style="height:20px;"></div>
+        <div style="font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:3px;color:var(--gray-500);margin-bottom:12px;text-transform:uppercase;">2.3.2 — 행크 지원 물품 목록</div>
+        <p class="prose" style="margin-bottom:16px;">삼촌 행크의 방산물품 무역업 덕분에 집에는 1955년 미국 시골에서 보기 어려운 최신 물품들이 있습니다. 이것은 세계관 내 비주얼 디테일이자 CH_04 탈출 시도의 소품 근거가 됩니다.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>물품</th><th>용도</th><th>게임 내 기능</th></tr></thead>
+            <tbody>
+              <tr><td><strong>테이프형 자동응답기</strong></td><td>행크의 음성 메시지 수신</td><td>챕터 중간 스토리 트리거 — 행크의 녹음 메시지 재생. 미니게임과 무관.</td></tr>
+              <tr><td><strong>링거 장치</strong></td><td>토마스의 의료 지원</td><td>배경 소품. 사지마비 환자의 일상 설득력 확보.</td></tr>
+              <tr><td><strong>다이얼 전화기</strong></td><td>외부 연락 수단</td><td>CH_04 미니게임 — 행크에게 연락하기 위한 조작 대상 (ROTATE).</td></tr>
+              <tr><td><strong>기타 최신 가전</strong></td><td>일상 생활</td><td><span class="status-tbd">[TBD]</span> 레벨 배치 시 추가 결정.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    <!-- ═══ CH 3. 인물 설정 ═══ -->
+    <section class="section" id="ch3">
+      <div class="section-header">
+        <div class="section-label">Chapter 03</div>
+        <h2 class="section-title">인물 <span>설정</span></h2>
+        <p class="section-desc">세 핵심 인물의 설정과 감정 아크를 정의합니다.</p>
+      </div>
+
+      <div class="subsection" id="ch3-1">
+        <div class="subsection-title"><span class="subsection-num">3.1</span>플레이어 캐릭터 — 토마스 칼드웰</div>
+
+        <div style="font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:3px;color:var(--gray-500);margin-bottom:12px;text-transform:uppercase;">3.1.1 — 인물 기본 설정</div>
+        <div class="info-block">
+          <div class="info-row"><div class="info-key">이름</div><div class="info-val">토마스 칼드웰 (Tomas Caldwell) — <strong>인게임 미공개.</strong> 플레이어가 자신을 투영할 수 있도록 이름은 게임 내에서 직접 언급하지 않는다.</div></div>
+          <div class="info-row"><div class="info-key">나이</div><div class="info-val">16세 (1955년 기준)</div></div>
+          <div class="info-row"><div class="info-key">신체 상태</div><div class="info-val">사지마비. 왼손 미세 움직임만 가능. 평생 움직여본 적 없어 몸이 가늘게 말랐다.</div></div>
+          <div class="info-row"><div class="info-key">언어 능력</div><div class="info-val">마을 신부에게 배운 기초 영어를 읽고 쓸 수 있으나 실제로 말해본 적이 없다.</div></div>
+          <div class="info-row"><div class="info-key">일상</div><div class="info-val">창가의 구름과 나뭇가지를 바라보는 것이 거의 유일한 오락이다. 기억이 있던 순간부터 움직일 수 없었다.</div></div>
+          <div class="info-row"><div class="info-key">시점</div><div class="info-val">1인칭 (FPS). 플레이어 = 토마스 본인.</div></div>
+          <div class="info-row"><div class="info-key">보이스</div><div class="info-val">독백은 텍스트로만 출력. 보이스 적용 여부 <span class="status-tbd">[TBD]</span></div></div>
+        </div>
+
+        <div style="height:20px;"></div>
+        <div style="font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:3px;color:var(--gray-500);margin-bottom:12px;text-transform:uppercase;">3.1.2 — 내면 서사 방향 (감정 아크)</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>챕터</th><th>핵심 감정</th><th>어머니에 대한 감정</th></tr></thead>
+            <tbody>
+              <tr><td>OPENING</td><td>무기력, 체념</td><td>익숙함, 의존</td></tr>
+              <tr><td>CH_01</td><td>답답함</td><td>걱정 — 어머니가 실수를 했다</td></tr>
+              <tr><td>CH_02</td><td>공포 + 불안</td><td>어머니가 이상해지고 있다는 감지</td></tr>
+              <tr><td>CH_03</td><td>연민</td><td>어머니를 구하고 싶다는 충동</td></tr>
+              <tr><td>CH_04</td><td>희망 + 긴장</td><td>어머니가 멈추길 바람</td></tr>
+              <tr><td>ENDING</td><td>체념 + 복잡한 사랑</td><td>이해 — 어머니는 나를 사랑했다</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout" style="margin-top:16px;">
+          <div class="callout-label">서사적 의도</div>
+          <p>플레이어는 게임 내내 탈출보다 <strong style="color:var(--off-white);">어머니를 멈추게 하고 싶어</strong>합니다. 결말에서 연락에 성공하는 순간, 어머니는 이미 돌아올 수 없는 상태입니다. 플레이어의 노력이 무의미했다는 코스믹 호러의 핵심입니다.</p>
+        </div>
+      </div>
+
+      <div class="subsection" id="ch3-2">
+        <div class="subsection-title"><span class="subsection-num">3.2</span>어머니 — 애니 칼드웰</div>
+
+        <div style="font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:3px;color:var(--gray-500);margin-bottom:12px;text-transform:uppercase;">3.2.1 — 인물 기본 설정</div>
+        <div class="info-block">
+          <div class="info-row"><div class="info-key">이름</div><div class="info-val">애니 칼드웰 (Annie Caldwell)</div></div>
+          <div class="info-row"><div class="info-key">나이</div><div class="info-val">34세 (1955년 기준)</div></div>
+          <div class="info-row"><div class="info-key">상태</div><div class="info-val">가정주부. 아들의 전담 간병인.</div></div>
+          <div class="info-row"><div class="info-key">핵심 성격</div><div class="info-val">헌신적 모성애. 자녀를 위해 할 수 있는 모든 것을 하는 사람. 악인이 아니다.</div></div>
+          <div class="info-row"><div class="info-key">서사적 위치</div><div class="info-val">공포의 원천이지만 동시에 비극의 주인공. 애니 또한 피해자다.</div></div>
+          <div class="info-row"><div class="info-key">외형 방향</div><div class="info-val">처음에는 단정하고 따뜻해 보인다. 챕터가 진행될수록 외형도 변화. 34세이지만 오랜 간병으로 나이보다 지쳐 보인다.</div></div>
+          <div class="info-row"><div class="info-key">목소리·대사</div><div class="info-val">자녀에게 말을 걸지만 대답을 기대하지 않는 톤. 후반부에는 혼잣말·기도의 비중이 높아진다.</div></div>
+        </div>
+
+        <div style="height:16px;"></div>
+        <div class="callout">
+          <div class="callout-label">인물 배경</div>
+          <p>1940년 미국 시골에서 전염병은 재앙에 가까웠습니다. 전쟁 중인 국가에서 의료물자가 시골까지 빠르게 보급될 리 없었고, 시골 주민들은 의학에 대한 신뢰도 높지 않았습니다. 이름 모를 열병은 <strong style="color:var(--off-white);">1942년 여름 남편을 앗아갔습니다.</strong> 세 살 아들을 안고 작은 장례를 치렀습니다. 같은 해 가을, 끝난 줄 알았던 열병이 아들에게 찾아왔습니다. 이번엔 의료물자도 있었고, 마을 교회에서 헌신적으로 기도도 올렸습니다. <strong style="color:var(--off-white);">아들은 살았지만, 더 이상 움직이지 않았습니다.</strong> 전쟁이 끝났습니다. 애니는 그날부터 13년째 간병 중입니다.</p>
+        </div>
+
+        <div style="height:20px;"></div>
+        <div style="font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:3px;color:var(--gray-500);margin-bottom:12px;text-transform:uppercase;">3.2.2 — 챕터별 심리 변화 아크</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>챕터</th><th>심리 상태</th><th>행동 특징</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>OPENING</td>
+                <td><span class="arc-badge arc-0">안정</span></td>
+                <td>걱정하지만 이성적. 자녀를 정성스럽게 돌본다. 기도는 있지만 일상적 수준.</td>
+              </tr>
+              <tr>
+                <td>CH_01</td>
+                <td><span class="arc-badge arc-1">확신 시작</span></td>
+                <td>민간요법에 강한 확신. 실패해도 방법을 의심하지 않고 더 열심히 하려 한다.</td>
+              </tr>
+              <tr>
+                <td>CH_02</td>
+                <td><span class="arc-badge arc-2">외부 의존</span></td>
+                <td>스스로의 힘 외에 다른 무언가에 기대기 시작한다. 중얼거림이 늘어난다.</td>
+              </tr>
+              <tr>
+                <td>CH_03</td>
+                <td><span class="arc-badge arc-3">패닉 + 종교 언어</span></td>
+                <td>냉정한 판단보다 감정이 앞선다. 종교적 언어를 처음으로 사용한다.</td>
+              </tr>
+              <tr>
+                <td>CH_04</td>
+                <td><span class="arc-badge arc-3">종교 심취 직전</span></td>
+                <td>잠들어 있지만 표정이 이상하다. 의식이 이미 다른 곳에 있는 느낌.</td>
+              </tr>
+              <tr>
+                <td>ENDING</td>
+                <td><span class="arc-badge arc-4">완전 왜곡</span></td>
+                <td>차분하다. 분노가 아니라 확신. "이것이 사랑이고, 신의 뜻이다."</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div style="height:20px;"></div>
+        <div style="font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:3px;color:var(--gray-500);margin-bottom:12px;text-transform:uppercase;">3.2.3 — 치료 방식 변화</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>단계</th><th>챕터</th><th>치료 방식</th><th>애니의 믿음</th></tr></thead>
+            <tbody>
+              <tr><td>1단계</td><td>CH_01</td><td>민간요법 (온열 치료)</td><td>"이게 도움이 된다고 들었어."</td></tr>
+              <tr><td>2단계</td><td>CH_02</td><td>대체의학 (거머리 치료)</td><td>"예전부터 써온 방법이야. 틀림없어."</td></tr>
+              <tr><td>3단계</td><td>CH_03</td><td>절박한 확인 행위</td><td>"신께서 지켜주실 거야. 내 믿음이 옳아."</td></tr>
+              <tr><td>4단계</td><td>CH_ENDING</td><td>종교적 확신 → 살해</td><td>"이것이 신의 뜻이고, 나의 사랑이다."</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="subsection" id="ch3-3">
+        <div class="subsection-title"><span class="subsection-num">3.3</span>삼촌 — 행크 칼드웰</div>
+
+        <div style="font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:3px;color:var(--gray-500);margin-bottom:12px;text-transform:uppercase;">3.3.1 — 인물 기본 설정</div>
+        <div class="info-block">
+          <div class="info-row"><div class="info-key">이름</div><div class="info-val">행크 칼드웰 (Hank Caldwell)</div></div>
+          <div class="info-row"><div class="info-key">나이</div><div class="info-val">51세 (1955년 기준)</div></div>
+          <div class="info-row"><div class="info-key">상태</div><div class="info-val">방산물품 무역 사업가. 아시아 체류 중.</div></div>
+          <div class="info-row"><div class="info-key">가족관계</div><div class="info-val">사망한 남편의 형. 토마스의 큰아버지.</div></div>
+          <div class="info-row"><div class="info-key">성격</div><div class="info-val">결혼도 하지 않고 무뚝뚝하다. 직접적 애정 표현보다 물질적 지원을 통해 가족에게 사랑을 표현한다.</div></div>
+        </div>
+
+        <div style="height:16px;"></div>
+        <div class="callout">
+          <div class="callout-label">인물 배경</div>
+          <p>행크는 전쟁 이전부터 항만 교역 업무로 여러 국가를 돌아다니는 사업가였습니다. 1942년 동생의 사망과 조카의 병세 소식을 듣고도 전쟁으로 돌아올 수 없었습니다. 종전 이후 한 번 묘지에 들른 뒤 곧바로 아시아로 떠나갔습니다. 결혼도 하지 않은 그가 유일한 가족에게 보낼 수 있는 사랑은 <strong style="color:var(--off-white);">끊임없는 금전 지원</strong>이었습니다. 덕분에 애니는 경제적 여유를 확보할 수 있었고, 집에는 일반 시골 가정에서 볼 수 없는 최신 물품들이 생겼습니다.</p>
+        </div>
+
+        <div style="height:20px;"></div>
+        <div style="font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:3px;color:var(--gray-500);margin-bottom:12px;text-transform:uppercase;">3.3.2 — 게임 내 역할</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>역할</th><th>내용</th></tr></thead>
+            <tbody>
+              <tr><td><strong>소품 공급원</strong></td><td>테이프형 자동응답기·링거·다이얼 전화기 등 최신 물품의 세계관적 근거.</td></tr>
+              <tr><td><strong>스토리 트리거</strong></td><td>자동응답기에 녹음된 행크의 음성 메시지가 챕터 중간 스토리 요소로 재생된다. 외부 세계와의 유일한 연결.</td></tr>
+              <tr><td><strong>결말 연결</strong></td><td>CH_04에서 토마스가 전화를 거는 대상. "지금 가고 있어"라는 행크의 목소리가 엔딩 연출과 겹친다.</td></tr>
+              <tr><td><strong>직접 등장 여부</strong></td><td>게임 내 직접 등장 없음. 음성과 물품으로만 존재한다.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    <!-- ═══ CH 4. 전체 서사 구조 ═══ -->
+    <section class="section" id="ch4">
+      <div class="section-header">
+        <div class="section-label">Chapter 04</div>
+        <h2 class="section-title">전체 <span>서사 구조</span></h2>
+        <p class="section-desc">게임 전체를 관통하는 서사 기조와 결말 구조를 정의합니다.</p>
+      </div>
+
+      <div class="subsection" id="ch4-1">
+        <div class="subsection-title"><span class="subsection-num">4.1</span>서사 기조</div>
+        <div class="callout">
+          <div class="callout-label">핵심 명제</div>
+          <p><strong style="color:var(--off-white);">"어머니의 사랑이 왜곡될 때, 사랑은 가장 무서운 것이 된다."</strong></p>
+        </div>
+        <div style="height:16px;"></div>
+        <p class="prose">이 게임은 악인이 없는 공포입니다. 어머니는 진심으로 자녀를 살리고 싶었고, 그 마음이 왜곡되어 최악의 결말로 이어집니다. 플레이어는 어머니를 두려워하면서도 불쌍히 여기게 됩니다. 결말에서 어머니가 자녀를 해치는 것은 증오가 아니라 확신에서 비롯됩니다. 이것이 게임이 전달하고자 하는 공포입니다.</p>
+      </div>
+
+      <div class="subsection" id="ch4-2">
+        <div class="subsection-title"><span class="subsection-num">4.2</span>챕터별 서사 아크 요약</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>챕터</th><th>어머니 치료</th><th>어머니 상태</th><th>바르바탄</th><th>플레이어 핵심 감정</th></tr></thead>
+            <tbody>
+              <tr><td><strong>OPENING</strong></td><td>일상적 돌봄</td><td>안정, 걱정</td><td>없음</td><td>무기력, 체념</td></tr>
+              <tr><td><strong>CH_01</strong></td><td>민간요법 (온열)</td><td>확신, 희망</td><td>없음</td><td>답답함</td></tr>
+              <tr><td><strong>CH_02</strong></td><td>대체의학 (거머리)</td><td>외부 의존 시작</td><td>1회 (약함)</td><td>공포 + 불안</td></tr>
+              <tr><td><strong>CH_03</strong></td><td>절박한 확인</td><td>패닉, 종교 언어 등장</td><td>2회 (선명)</td><td>연민</td></tr>
+              <tr><td><strong>CH_04</strong></td><td>(플레이어 탈출)</td><td>종교 심취 직전</td><td>없음</td><td>희망 + 긴장</td></tr>
+              <tr><td><strong>ENDING</strong></td><td>종교적 확신 → 살해</td><td>완전 왜곡, 차분</td><td>3회 (완전 현현)</td><td>체념 + 복잡한 사랑</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="subsection" id="ch4-3">
+        <div class="subsection-title"><span class="subsection-num">4.3</span>결말 구조 및 의도</div>
+        <div class="info-block">
+          <div class="info-block-title">결말 확정 사항</div>
+          <div class="info-row"><div class="info-key">결말 유형</div><div class="info-val">비극적 아이러니 — 탈출 성공 직후 살해</div></div>
+          <div class="info-row"><div class="info-key">구체 사건</div><div class="info-val">CH_04에서 삼촌에게 연락 성공. 어머니가 깨어남. 완전히 종교에 심취한 어머니에 의해 살해. 삼촌의 목소리가 들리는 가운데 화면이 어두워짐.</div></div>
+          <div class="info-row"><div class="info-key">엔딩 자막</div><td><strong>MOTHER. PLEASE.</strong> — 제목이 마지막 장면에서 다른 의미로 읽힌다. 간청인지, 선언인지 모호하게.</td></div>
+          <div class="info-row"><div class="info-key">서사적 의도</div><div class="info-val">플레이어의 모든 노력이 무의미했다는 코스믹 호러. 단 어머니가 자녀를 사랑했다는 사실 자체는 부정하지 않는다. 사랑이 왜곡된 것이지, 사랑이 없었던 것이 아니다.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ CH 5. 챕터별 시나리오 ═══ -->
+    <section class="section" id="ch5">
+      <div class="section-header">
+        <div class="section-label">Chapter 05</div>
+        <h2 class="section-title">챕터별 <span>시나리오</span></h2>
+        <p class="section-desc">각 챕터의 장면 의도, 어머니 상태, 연출 방향, 플레이어 감정 목표를 정의합니다. 실제 대사 텍스트는 포함하지 않습니다.</p>
+      </div>
+
+      <!-- CH_OPENING -->
+      <div class="chapter-card" id="ch5-opening">
+        <div class="chapter-card-header">
+          <div>
+            <div class="chapter-id">CH_OPENING</div>
+            <div class="chapter-title">오프닝</div>
+            <div class="chapter-type">구성: 독백 → 연출 &nbsp;|&nbsp; 미니게임: 없음</div>
+          </div>
+        </div>
+        <div class="chapter-card-body">
+          <div class="chapter-row">
+            <div class="chapter-key">장면 의도</div>
+            <div class="chapter-val">게임의 공간과 인물 관계를 소개한다. 1950년대 미국 중산층 침실. 어머니는 완전히 정상적인 인물로 등장한다. 이 단계에서는 공포 요소가 없다. 오히려 따뜻하고 일상적인 분위기에서 시작해야, 이후 변화가 더 무섭게 느껴진다.</div>
+          </div>
+          <div class="chapter-row">
+            <div class="chapter-key">어머니 상태</div>
+            <div class="chapter-val">걱정이 많지만 안정적. 자녀 곁을 지키고, 이불을 고쳐주고, 무언가를 속삭인다. 기도인지 혼잣말인지 구분이 되지 않는 수준으로 유지.</div>
+          </div>
+          <div class="chapter-row">
+            <div class="chapter-key">연출 방향</div>
+            <div class="chapter-val">어머니가 방에 들어와 자녀를 돌보고 나간다. 문이 닫히는 소리. 조용한 방. 플레이어는 처음으로 손을 움직여 본다.</div>
+          </div>
+          <div class="chapter-row">
+            <div class="chapter-key">플레이어 목표 감정</div>
+            <div class="chapter-val"><strong>무기력함.</strong> 내가 할 수 있는 것이 없다는 것. 동시에 이 공간이 안전하다는 착각.</div>
+          </div>
+          <div class="chapter-row">
+            <div class="chapter-key">조작 목적</div>
+            <div class="chapter-val">왼손 이동 + 오브젝트 상호작용 튜토리얼. 강압 없이 자연스럽게 조작법을 익힌다.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CH_01 -->
+      <div class="chapter-card" id="ch5-ch01">
+        <div class="chapter-card-header">
+          <div>
+            <div class="chapter-id">CH_01</div>
+            <div class="chapter-title">전기 치료</div>
+            <div class="chapter-type">구성: 독백 → 미니게임 → 연출 &nbsp;|&nbsp; 치료: 민간요법 (온열)</div>
+          </div>
+        </div>
+        <div class="chapter-card-body">
+          <div class="chapter-row">
+            <div class="chapter-key">장면 의도</div>
+            <div class="chapter-val">어머니의 첫 번째 치료 시도. 적외선 전열기구를 이용한 온열 치료 — 혈액순환에 좋다고 알려진 민간요법. 나쁜 의도 없이, 좋은 것을 해주려다 방치가 된다. 어머니는 실수를 했지만 자신이 실수했다는 것을 모른다.</div>
+          </div>
+          <div class="chapter-row">
+            <div class="chapter-key">어머니 상태</div>
+            <div class="chapter-val">치료에 강한 확신. 희망적. 실패 후에도 방법을 의심하지 않는다. 더 열심히 하겠다고 다짐하는 방향으로 해석한다.</div>
+          </div>
+          <div class="chapter-row">
+            <div class="chapter-key">미니게임</div>
+            <div class="chapter-val">전열기구 전원 코드 뽑기 (PULL_PUSH). 자세한 명세는 시스템 기획서 4.2 참조.</div>
+          </div>
+          <div class="chapter-row">
+            <div class="chapter-key">연출 방향</div>
+            <div class="chapter-val">미니게임 성공 후 어머니가 돌아와 플러그 빠진 전열기구를 발견한다. 혼란스러워하다가 이내 다른 방법을 찾겠다고 다짐한다. 신에게 도움을 요청하는 기도는 아직 없다.</div>
+          </div>
+          <div class="chapter-row">
+            <div class="chapter-key">플레이어 목표 감정</div>
+            <div class="chapter-val"><strong>답답함.</strong> 어머니가 무서운 것이 아니라 이 상황 자체가 답답하다. 어머니에 대한 연민의 씨앗이 생긴다.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CH_02 -->
+      <div class="chapter-card" id="ch5-ch02">
+        <div class="chapter-card-header">
+          <div>
+            <div class="chapter-id">CH_02</div>
+            <div class="chapter-title">거머리 치료</div>
+            <div class="chapter-type">구성: 독백 → 미니게임 → 연출 &nbsp;|&nbsp; 치료: 대체의학 (흡혈 요법)</div>
+          </div>
+        </div>
+        <div class="chapter-card-body">
+          <div class="chapter-row">
+            <div class="chapter-key">장면 의도</div>
+            <div class="chapter-val">어머니가 검증된 방법에서 벗어나기 시작한 첫 번째 신호. 거머리를 이용한 흡혈 치료는 역사적으로 실재한 치료법으로, 어머니의 입장에서 충분히 선택할 수 있는 "다음 단계"다. 이 챕터에서 처음으로 바르바탄이 암시된다.</div>
+          </div>
+          <div class="chapter-row">
+            <div class="chapter-key">어머니 상태</div>
+            <div class="chapter-val">자신의 판단에 확신이 강해지고 있다. 외부에서 힘을 빌려야 한다는 생각이 싹트는 단계. 치료 중 홀로 중얼거리는 장면이 있다. 아직 확신이 아닌 간구 수준.</div>
+          </div>
+          <div class="chapter-row">
+            <div class="chapter-key">미니게임</div>
+            <div class="chapter-val">거머리 카메라 접근 공포 연출 + 떼어내기 (PULL_PUSH). 자세한 명세는 시스템 기획서 4.3 참조.</div>
+          </div>
+          <div class="chapter-row">
+            <div class="chapter-key">연출 방향</div>
+            <div class="chapter-val">미니게임 성공 후 어머니는 거머리가 없어진 것을 오히려 "치료가 완료된 것"으로 해석한다. 이 오해가 어머니의 확신을 더 강화한다. 이 순간 바르바탄의 첫 번째 현현 (플레이어만 인지).</div>
+          </div>
+          <div class="chapter-row">
+            <div class="chapter-key">플레이어 목표 감정</div>
+            <div class="chapter-val"><strong>공포 + 불안.</strong> 거머리에 대한 물리적 공포와 어머니가 조금씩 달라지고 있다는 심리적 불안이 공존.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CH_03 -->
+      <div class="chapter-card" id="ch5-ch03">
+        <div class="chapter-card-header">
+          <div>
+            <div class="chapter-id">CH_03</div>
+            <div class="chapter-title">생존 신호</div>
+            <div class="chapter-type">구성: 연출 → 독백 → 미니게임 → 연출 &nbsp;|&nbsp; 치료: 절박한 확인 행위</div>
+          </div>
+        </div>
+        <div class="chapter-card-body">
+          <div class="chapter-row">
+            <div class="chapter-key">장면 의도</div>
+            <div class="chapter-val">어머니의 냉정한 판단이 완전히 무너지는 챕터. "살아있는지 확인"하는 것 자체가 핵심이다. 구성이 유일하게 연출로 시작하는 이유 — 어머니가 먼저 들어와 상황을 만들기 때문.</div>
+          </div>
+          <div class="chapter-row">
+            <div class="chapter-key">어머니 상태</div>
+            <div class="chapter-val">패닉과 헌신이 뒤섞임. 종교적 언어를 처음으로 사용하는 챕터. 아직 확신이 아닌 간구의 형태. 눈물이 있을 수 있지만, 그 눈물이 공포인지 사랑인지 구분이 어렵다.</div>
+          </div>
+          <div class="chapter-row">
+            <div class="chapter-key">미니게임</div>
+            <div class="chapter-val">손 들기로 살아있음 증명 (WAVE). 자세한 명세는 시스템 기획서 4.4 참조. 이 챕터에서만 수직 이동 허용.</div>
+          </div>
+          <div class="chapter-row">
+            <div class="chapter-key">연출 방향</div>
+            <div class="chapter-val">미니게임 성공(손을 든 것)을 어머니는 "기도가 닿았다"는 신호로 받아들인다. 이 해석이 종교적 확신으로 직결된다. 두 번째 바르바탄 현현 (플레이어만 인지, 어머니 그림자 변형).</div>
+          </div>
+          <div class="chapter-row">
+            <div class="chapter-key">플레이어 목표 감정</div>
+            <div class="chapter-val"><strong>연민.</strong> 어머니가 불쌍하다. 동시에 이 상황이 통제 불능이 되고 있다는 공포.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CH_04 -->
+      <div class="chapter-card" id="ch5-ch04">
+        <div class="chapter-card-header">
+          <div>
+            <div class="chapter-id">CH_04</div>
+            <div class="chapter-title">탈출 시도</div>
+            <div class="chapter-type">구성: 독백 → 미니게임 (2단계) &nbsp;|&nbsp; 어머니 부재</div>
+          </div>
+        </div>
+        <div class="chapter-card-body">
+          <div class="chapter-row">
+            <div class="chapter-key">장면 의도</div>
+            <div class="chapter-val">어머니가 처음으로 부재한 챕터. 플레이어에게 처음으로 주도권이 주어지지만, 그 주도권은 극도로 제한적이다. 왼손 하나. 조용히 움직여야 한다.</div>
+          </div>
+          <div class="chapter-row">
+            <div class="chapter-key">어머니 상태</div>
+            <div class="chapter-val">잠들어 있다. 언제든 깰 수 있다. 잠든 얼굴 표정이 이상하다 — 이미 의식이 다른 곳에 있는 느낌.</div>
+          </div>
+          <div class="chapter-row">
+            <div class="chapter-key">미니게임 구성</div>
+            <div class="chapter-val">
+              <strong>1단계</strong>: 서랍 열기 → 주소록 확인 (번호 획득)<br>
+              <strong>2단계</strong>: 전화기로 이동 → 다이얼 입력 (ROTATE)
+            </div>
+          </div>
+          <div class="chapter-row">
+            <div class="chapter-key">번호 획득 방식</div>
+            <div class="chapter-val">침대 옆 서랍 안의 주소록에서 삼촌 번호를 확인한다. 서랍 열기 + 주소록 페이지 열기 + 번호 확인 → 전화기로 이동 → 다이얼 입력. 자세한 명세는 시스템 기획서 4.5 참조.</div>
+          </div>
+          <div class="chapter-row">
+            <div class="chapter-key">연출 방향</div>
+            <div class="chapter-val">연결음이 들린다. 삼촌의 목소리. 연락 성공. 그 순간 어머니가 깨어난다.</div>
+          </div>
+          <div class="chapter-row">
+            <div class="chapter-key">플레이어 목표 감정</div>
+            <div class="chapter-val"><strong>희망 + 긴장.</strong> 처음으로 내가 뭔가를 했다는 느낌. 그 희망이 끝까지 유지되어야 결말의 충격이 크다.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CH_ENDING -->
+      <div class="chapter-card" id="ch5-ending">
+        <div class="chapter-card-header">
+          <div>
+            <div class="chapter-id">CH_ENDING</div>
+            <div class="chapter-title">엔딩</div>
+            <div class="chapter-type">구성: 연출만 &nbsp;|&nbsp; 조작 없음 &nbsp;|&nbsp; 미니게임 없음</div>
+          </div>
+        </div>
+        <div class="chapter-card-body">
+          <div class="chapter-row">
+            <div class="chapter-key">장면 의도</div>
+            <div class="chapter-val">플레이어는 아무것도 할 수 없다. 처음부터 끝까지 연출이다. 이 무력감은 게임 전체의 무력감을 한 번 더 강화한다.</div>
+          </div>
+          <div class="chapter-row">
+            <div class="chapter-key">어머니 상태</div>
+            <div class="chapter-val">완전히 종교에 심취한 상태. 표면적으로 차분하다. 분노가 아니라 확신이다. 이것이 더 무섭다.</div>
+          </div>
+          <div class="chapter-row">
+            <div class="chapter-key">연출 방향</div>
+            <div class="chapter-val">
+              전화기는 아직 연결되어 있다. 삼촌의 목소리가 계속 들린다.<br>
+              어머니가 천천히 다가온다. 조용하다.<br>
+              세 번째 바르바탄 현현 — 이번엔 사라지지 않는다. 어머니와 겹쳐 보인다.<br>
+              화면이 서서히 어두워진다.
+            </div>
+          </div>
+          <div class="chapter-row">
+            <div class="chapter-key">엔딩 자막</div>
+            <div class="chapter-val"><strong>MOTHER. PLEASE.</strong><br><span style="font-size:12px;color:var(--gray-500);">간청인지 선언인지 모호하게. 제목이 이 순간에 다른 의미로 읽힌다.</span></div>
+          </div>
+          <div class="chapter-row">
+            <div class="chapter-key">플레이어 목표 감정</div>
+            <div class="chapter-val"><strong>체념 + 복잡한 사랑.</strong> 어머니가 나를 사랑했다는 것을 알면서 죽는다. 슬프고 무섭고 이해가 된다.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ CH 6. 대사 스크립트 ═══ -->
+    <section class="section" id="ch6">
+      <div class="section-header">
+        <div class="section-label">Chapter 06</div>
+        <h2 class="section-title">대사 <span>스크립트</span></h2>
+        <p class="section-desc">플레이어 독백 및 어머니 대사의 작성 방침과 현재 상태를 정의합니다.</p>
+      </div>
+
+      <div class="subsection" id="ch6-1">
+        <div class="subsection-title"><span class="subsection-num">6.1</span>작성 방침</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>항목</th><th>방침</th></tr></thead>
+            <tbody>
+              <tr><td><strong>언어 톤</strong></td><td>짧고 단편적. 사지마비 환자의 내면은 긴 문장보다 끊어진 단문이 설득력 있다.</td></tr>
+              <tr><td><strong>독백 분량</strong></td><td>챕터 진입 시 2~3줄 이내. UI 최대 2줄 제한 규칙(시스템 기획서 9.2) 준수.</td></tr>
+              <tr><td><strong>어머니 대사</strong></td><td>자녀에게 말을 걸되 대답을 기대하지 않는 톤. 후반부로 갈수록 혼잣말·기도 비중 증가.</td></tr>
+              <tr><td><strong>바르바탄 언급</strong></td><td>어머니가 CH_01 연출에서 이름을 처음 언급. 이후 기도문에 반복 등장.</td></tr>
+              <tr><td><strong>최종 데이터 관리</strong></td><td>완성된 텍스트는 dialogue_data.xlsx에 입력. 이 문서에는 실제 대사 문장을 기재하지 않는다.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="subsection" id="ch6-2">
+        <div class="subsection-title"><span class="subsection-num">6.2</span>플레이어 독백 스크립트 <span class="status-wip">[WIP]</span></div>
+        <div class="callout">
+          <div class="callout-label">작성 대기</div>
+          <p>5장 챕터별 시나리오를 기반으로 기획자가 직접 집필합니다. 완성 후 <strong style="color:var(--off-white);">dialogue_data.xlsx</strong>의 <code style="font-family:'Courier Prime',monospace;font-size:12px;">text_kr</code> 컬럼에 입력합니다. 트리거 ID는 <strong style="color:var(--off-white);">시스템 기획서 1.4</strong> 네이밍 규칙을 따릅니다.</p>
+        </div>
+      </div>
+
+      <div class="subsection" id="ch6-3">
+        <div class="subsection-title"><span class="subsection-num">6.3</span>어머니 대사 스크립트 <span class="status-wip">[WIP]</span></div>
+        <div class="callout">
+          <div class="callout-label">작성 대기</div>
+          <p>어머니 대사는 별도 dialogue 테이블 또는 연출 스크립트(direction_script.xlsx)로 관리 방식을 확정해야 합니다. 현재 <span class="status-tbd">[TBD]</span> — 6.2와 함께 집필 후 결정합니다.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ CH 7. 연출 스크립트 ═══ -->
+    <section class="section" id="ch7">
+      <div class="section-header">
+        <div class="section-label">Chapter 07</div>
+        <h2 class="section-title">연출 <span>스크립트</span></h2>
+        <p class="section-desc">챕터별 연출 시퀀스의 작성 방침과 현재 상태를 정의합니다.</p>
+      </div>
+
+      <div class="subsection" id="ch7-1">
+        <div class="subsection-title"><span class="subsection-num">7.1</span>작성 방침</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>항목</th><th>방침</th></tr></thead>
+            <tbody>
+              <tr><td><strong>연출 방식</strong></td><td>UE5 Sequencer 기반 스크립트 재생. AI 판단 없이 사전 정의된 시퀀스 실행.</td></tr>
+              <tr><td><strong>구성 요소</strong></td><td>어머니 애니메이션 / 카메라 컷 / 오디오 트리거 / 독백 트리거 / 이펙트. 시스템 기획서 8.2 참조.</td></tr>
+              <tr><td><strong>스크립트 형식</strong></td><td>타임코드 기준 이벤트 목록. 완성본은 direction_script.xlsx에 입력.</td></tr>
+              <tr><td><strong>바르바탄 연출</strong></td><td>구체적 형태 확정 후 세부 애니메이션·이펙트 설계. 현재 방향만 2.2.3에 정의.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="subsection" id="ch7-2">
+        <div class="subsection-title"><span class="subsection-num">7.2</span>챕터별 연출 시퀀스 <span class="status-wip">[WIP]</span></div>
+        <div class="callout">
+          <div class="callout-label">작성 대기</div>
+          <p>5장 챕터별 시나리오 방향을 기반으로 집필합니다. 완성 후 <strong style="color:var(--off-white);">direction_script.xlsx</strong>에 입력하고, 시스템 기획서 8장 챕터별 연출 개요를 업데이트합니다.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CHANGELOG -->
+    <div class="changelog">
+      <div class="changelog-title">변경 이력 / Changelog</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>버전</th><th>구분</th><th>항목</th><th>기존</th><th>변경</th><th>비고</th></tr></thead>
+          <tbody>
+            <tr>
+              <td style="font-family:'Courier Prime',monospace;">v1.0.0</td>
+              <td>추가</td>
+              <td>문서 최초 작성</td>
+              <td>—</td>
+              <td>1~7장 전체. 6~7장 WIP.</td>
+              <td>시스템 기획서에서 시나리오 관련 내용 분리</td>
+            </tr>
+            <tr>
+              <td style="font-family:'Courier Prime',monospace;">v1.1.0</td>
+              <td>수정</td>
+              <td>2장 세계관 전면 업데이트</td>
+              <td>1950년대 미국 중산층, 바르바탄 단순 설정</td>
+              <td>1955년 미국 시골 확정. 바르바탄 쇠퇴·전략 서사 추가. 2.3 공간 설정 신규 추가.</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td style="font-family:'Courier Prime',monospace;">v1.1.0</td>
+              <td>수정</td>
+              <td>3장 인물 설정 전면 업데이트</td>
+              <td>이름·나이 미정, 삼촌 미기재</td>
+              <td>토마스(16세)·애니(34세) 상세 추가. 3.3 행크 칼드웰 신규 추가. 배경 서사 전부 기술.</td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="footer">
+      MOTHER. PLEASE — 시나리오 기획서 v1.1.0 · 쿠마마루 · 내부 개발 전용 문서
+    </div>
+
+  </main>
+</div>
+
+<script>
+  // Sidebar scroll spy
+  const sections = document.querySelectorAll('section[id]');
+  const sidebarLinks = document.querySelectorAll('.sidebar a');
+  const navLinks = document.querySelectorAll('.doc-nav a');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        sidebarLinks.forEach(a => a.classList.toggle('current', a.getAttribute('href') === '#' + id));
+        navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + id));
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach(s => observer.observe(s));
+
+  // Mobile TOC toggle
+  const toggle = document.getElementById('toc-toggle');
+  const overlay = document.getElementById('toc-overlay');
+  const openTOC = () => document.body.classList.add('toc-open');
+  const closeTOC = () => document.body.classList.remove('toc-open');
+  toggle.addEventListener('click', () => document.body.classList.contains('toc-open') ? closeTOC() : openTOC());
+  overlay.addEventListener('click', closeTOC);
+  document.querySelectorAll('.sidebar a').forEach(link => {
+    link.addEventListener('click', e => {
+      e.preventDefault();
+      const target = document.querySelector(link.getAttribute('href'));
+      if (target) {
+        if (window.innerWidth <= 768) closeTOC();
+        setTimeout(() => target.scrollIntoView({ behavior: 'smooth', block: 'start' }), window.innerWidth <= 768 ? 280 : 0);
+      }
+    });
+  });
+</script>
+
+<!-- tags: 시나리오, 세계관, 인물 -->
