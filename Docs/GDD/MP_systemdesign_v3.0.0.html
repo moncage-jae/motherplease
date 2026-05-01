@@ -641,7 +641,7 @@
 <header class="doc-header">
   <div class="doc-title-bar">MOTHER.<span>PLEASE</span> — 시스템 기획서</div>
   <div class="doc-meta">
-    <span class="version">v2.9</span>
+    <span class="version">v3.0.0</span>
     <span class="doc-date">2026-03-15</span>
     <span class="doc-author">쿠마마루</span>
   </div>
@@ -715,7 +715,7 @@
       <div class="cover-meta-grid">
         <div class="cover-meta-item">
           <div class="cover-meta-label">VERSION</div>
-          <div class="cover-meta-value red">v2.9</div>
+          <div class="cover-meta-value red">v3.0.0</div>
         </div>
         <div class="cover-meta-item">
           <div class="cover-meta-label">DATE</div>
@@ -730,6 +730,10 @@
           <div class="cover-meta-value">UE5</div>
         </div>
       </div>
+    </div>
+
+    <div class="warning-banner">
+      ⚠️ 미완성 항목 41건 포함 (TBD 37, WIP 4, 검토필요 0) — 수치 파라미터는 플레이테스트 후, 시나리오 관련 항목은 집필 완료 후 순차 입력 예정.
     </div>
 
     <!-- ═══════════════════════════════
@@ -1638,8 +1642,10 @@ flowchart TD
           챕터 생명주기
         </div>
 
-        <p class="prose" style="margin-bottom:8px;">
-          챕터 매니저가 관리하는 상태 전이입니다. 챕터 내부의 세부 실행 순서는 시나리오 확정 전이므로 <span class="wip">[WIP]</span> 상태이며, 현재는 뼈대 구조만 정의합니다.
+        <p class="prose" style="margin-bottom:16px;">
+          챕터 매니저가 관리하는 상태 전이입니다. <strong>RUNNING 상태는 UE5 Sequencer가 감독</strong>합니다.
+          독백·행크 메시지·미니게임은 모두 Sequencer 타임라인의 Event Track으로 기동되며,
+          미니게임 구간에서만 Sequencer가 일시정지되고 결과에 따라 재개 또는 초기화됩니다.
         </p>
 
         <div class="diagram-wrap">
@@ -1649,16 +1655,99 @@ stateDiagram-v2
     [*] --> LOADING : 챕터 로드 시작
     LOADING --> CHECKPOINT_WRITE : 로드 완료
     CHECKPOINT_WRITE --> READY : 저장 완료
-    READY --> RUNNING : 챕터 내부 시퀀스 시작\n(트리거 대기 포함)
-    RUNNING --> CHECKPOINT_READ : 미니게임 실패
-    CHECKPOINT_READ --> READY : 복귀 완료
-    RUNNING --> TRANSITION : 챕터 종료 조건 달성
+    READY --> RUNNING : Sequencer 재생 시작
+    RUNNING --> MINIGAME_PAUSE : MINIGAME_START 트리거\n(Sequencer 일시정지)
+    MINIGAME_PAUSE --> RUNNING : MINIGAME_SUCCESS\n(Sequencer 재개)
+    MINIGAME_PAUSE --> CHECKPOINT_READ : MINIGAME_FAIL
+    CHECKPOINT_READ --> READY : Flag 초기화 후 복귀
+    RUNNING --> TRANSITION : Sequencer 재생 완료
     TRANSITION --> [*] : 다음 챕터 or 엔딩
           </div>
-          <div class="diagram-caption">Fig 3.3 — 챕터 생명주기 (뼈대) / Chapter Lifecycle — WIP</div>
+          <div class="diagram-caption">Fig 3.3a — 챕터 생명주기 / Chapter Lifecycle</div>
         </div>
 
-        <div style="height:16px;"></div>
+        <div style="height:24px;"></div>
+
+        <div style="font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:3px;color:var(--gray-500);margin-bottom:12px;text-transform:uppercase;">Sequencer 타임라인 구조 — CH_01 예시</div>
+
+        <p class="prose" style="margin-bottom:16px;">
+          아래는 CH_01(전기 치료) 챕터의 Sequencer 타임라인 예시입니다.
+          독백·행크 메시지·미니게임 기동이 모두 타임라인의 <em>Event Track</em> 하나에서 관리됩니다.
+          시나리오에 따라 각 이벤트의 순서와 타이밍을 자유롭게 조정할 수 있습니다.
+        </p>
+
+        <div style="background:var(--gray-900);border:1px solid var(--gray-700);padding:24px 28px;margin-bottom:20px;">
+          <div style="font-family:'Courier Prime',monospace;font-size:10px;color:var(--gray-500);letter-spacing:2px;margin-bottom:16px;text-transform:uppercase;">CH_01 Sequencer Timeline (예시)</div>
+
+          <!-- 타임라인 시각화 -->
+          <div style="position:relative;margin-bottom:8px;">
+            <!-- 시간축 -->
+            <div style="display:flex;align-items:center;gap:0;margin-bottom:12px;">
+              <div style="font-family:'Courier Prime',monospace;font-size:10px;color:var(--gray-600);width:100px;flex-shrink:0;">시간</div>
+              <div style="flex:1;height:1px;background:var(--gray-700);position:relative;">
+                <div style="position:absolute;left:0;top:-4px;width:8px;height:8px;border-radius:50%;background:var(--gray-600);"></div>
+                <div style="position:absolute;right:0;top:-4px;width:8px;height:8px;background:var(--gray-600);clip-path:polygon(0 50%,100% 0,100% 100%);"></div>
+              </div>
+            </div>
+
+            <!-- Event Track -->
+            <div style="display:flex;align-items:center;gap:0;margin-bottom:10px;">
+              <div style="font-family:'Courier Prime',monospace;font-size:10px;color:var(--gray-500);width:100px;flex-shrink:0;">Event Track</div>
+              <div style="flex:1;height:28px;background:var(--gray-800);border:1px solid var(--gray-700);position:relative;border-radius:2px;">
+                <div style="position:absolute;left:3%;top:4px;background:rgba(100,160,255,0.25);border:1px solid rgba(100,160,255,0.6);padding:2px 6px;font-family:'Courier Prime',monospace;font-size:9px;color:#7EB8F7;letter-spacing:0.5px;white-space:nowrap;">DIALOGUE_START</div>
+                <div style="position:absolute;left:28%;top:4px;background:rgba(100,160,255,0.25);border:1px solid rgba(100,160,255,0.6);padding:2px 6px;font-family:'Courier Prime',monospace;font-size:9px;color:#7EB8F7;letter-spacing:0.5px;white-space:nowrap;">PLAYBACK_START</div>
+                <div style="position:absolute;left:55%;top:4px;background:rgba(192,57,43,0.25);border:1px solid rgba(192,57,43,0.6);padding:2px 6px;font-family:'Courier Prime',monospace;font-size:9px;color:var(--red);letter-spacing:0.5px;white-space:nowrap;">MINIGAME_START ⏸</div>
+              </div>
+            </div>
+
+            <!-- Annie Track -->
+            <div style="display:flex;align-items:center;gap:0;margin-bottom:10px;">
+              <div style="font-family:'Courier Prime',monospace;font-size:10px;color:var(--gray-500);width:100px;flex-shrink:0;">Annie 애니메이션</div>
+              <div style="flex:1;height:28px;background:var(--gray-800);border:1px solid var(--gray-700);position:relative;border-radius:2px;">
+                <div style="position:absolute;left:0;top:0;width:55%;height:100%;background:rgba(100,160,255,0.08);border-right:1px dashed rgba(100,160,255,0.3);display:flex;align-items:center;padding:0 10px;">
+                  <span style="font-family:'Courier Prime',monospace;font-size:9px;color:var(--gray-500);">입장 → 전열기구 설치 → 방 나감</span>
+                </div>
+                <div style="position:absolute;left:55%;top:0;width:45%;height:100%;display:flex;align-items:center;padding:0 10px;">
+                  <span style="font-family:'Courier Prime',monospace;font-size:9px;color:var(--gray-700);">— MINIGAME_SUCCESS 신호 대기 —</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 카메라 -->
+            <div style="display:flex;align-items:center;gap:0;">
+              <div style="font-family:'Courier Prime',monospace;font-size:10px;color:var(--gray-500);width:100px;flex-shrink:0;">카메라</div>
+              <div style="flex:1;height:28px;background:var(--gray-800);border:1px solid var(--gray-700);position:relative;border-radius:2px;">
+                <div style="position:absolute;left:0;top:4px;width:18%;height:20px;background:rgba(58,56,53,0.8);border:1px solid var(--gray-600);display:flex;align-items:center;justify-content:center;">
+                  <span style="font-family:'Courier Prime',monospace;font-size:8px;color:var(--gray-400);">Shot A</span>
+                </div>
+                <div style="position:absolute;left:20%;top:4px;width:20%;height:20px;background:rgba(58,56,53,0.8);border:1px solid var(--gray-600);display:flex;align-items:center;justify-content:center;">
+                  <span style="font-family:'Courier Prime',monospace;font-size:8px;color:var(--gray-400);">Shot B</span>
+                </div>
+                <div style="position:absolute;left:42%;top:4px;width:13%;height:20px;background:rgba(58,56,53,0.8);border:1px solid var(--gray-600);display:flex;align-items:center;justify-content:center;">
+                  <span style="font-family:'Courier Prime',monospace;font-size:8px;color:var(--gray-400);">Shot C</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:16px;display:flex;gap:20px;flex-wrap:wrap;">
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div style="width:12px;height:12px;background:rgba(100,160,255,0.25);border:1px solid rgba(100,160,255,0.6);"></div>
+              <span style="font-family:'Courier Prime',monospace;font-size:10px;color:var(--gray-400);">Sequencer Event (독백·행크)</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div style="width:12px;height:12px;background:rgba(192,57,43,0.25);border:1px solid rgba(192,57,43,0.6);"></div>
+              <span style="font-family:'Courier Prime',monospace;font-size:10px;color:var(--gray-400);">미니게임 기동 이벤트 (⏸ 일시정지)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout" style="margin-bottom:20px;">
+          <div class="callout-label">Sequencer 일시정지 구간</div>
+          <p><code style="font-family:'Courier Prime',monospace;font-size:12px;">MINIGAME_START</code> 이벤트가 발동되면 Sequencer가 해당 시점에서 <strong style="color:var(--off-white);">일시정지</strong>됩니다. 플레이어가 미니게임을 진행하는 동안 애니메이션·카메라는 멈춰있습니다. 미니게임 성공 시 Sequencer가 재개되고, 실패 시 처음으로 초기화됩니다.</p>
+        </div>
+
+        <div style="height:8px;"></div>
         <div class="table-wrap">
           <table>
             <thead><tr><th>상태</th><th>설명</th><th>진입 조건</th><th>이탈 조건</th></tr></thead>
@@ -1677,26 +1766,32 @@ stateDiagram-v2
               </tr>
               <tr>
                 <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">READY</code></td>
-                <td>챕터 시작 준비 완료 · 페이드 인</td>
+                <td>페이드 인 완료 · Sequencer 시작 대기</td>
                 <td>CHECKPOINT_WRITE 완료 또는 CHECKPOINT_READ 완료</td>
-                <td>내부 시퀀스 시작</td>
+                <td>Sequencer 재생 시작</td>
               </tr>
               <tr>
                 <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">RUNNING</code></td>
-                <td>챕터 내부 시퀀스 진행 중 <span class="wip">[WIP]</span></td>
+                <td><strong>Sequencer 재생 중</strong> — 독백·행크 메시지·연출이 타임라인 순서로 실행됨</td>
                 <td>READY 완료</td>
-                <td>미니게임 실패 또는 챕터 종료 조건 달성</td>
+                <td>MINIGAME_START 이벤트 또는 Sequencer 종료</td>
+              </tr>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">MINIGAME_PAUSE</code></td>
+                <td><strong>Sequencer 일시정지</strong> — 플레이어가 미니게임 진행</td>
+                <td>MINIGAME_START 트리거 발동</td>
+                <td>MINIGAME_SUCCESS(재개) 또는 MINIGAME_FAIL</td>
               </tr>
               <tr>
                 <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">CHECKPOINT_READ</code></td>
-                <td>저장된 챕터 시작점으로 복귀</td>
-                <td>RUNNING 중 미니게임 실패</td>
+                <td>Flag 초기화 후 챕터 처음으로 복귀</td>
+                <td>MINIGAME_FAIL</td>
                 <td>복귀 완료</td>
               </tr>
               <tr>
                 <td><code style="font-family:'Courier Prime',monospace;font-size:12px;">TRANSITION</code></td>
-                <td>챕터 전환 연출 재생</td>
-                <td>챕터 종료 조건 달성</td>
+                <td>챕터 전환 연출 (페이드 아웃 → 챕터명 → 페이드 인)</td>
+                <td>Sequencer 재생 완료</td>
                 <td>전환 연출 완료</td>
               </tr>
             </tbody>
@@ -1782,8 +1877,88 @@ stateDiagram-v2
       <div class="subsection" id="ch4-1">
         <div class="subsection-title"><span class="subsection-num">4.1</span>공통 구조</div>
 
-        <div style="font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:3px;color:var(--gray-500);margin-bottom:12px;text-transform:uppercase;">4.1.1 — 미니게임 기동 방식</div>
-        <p class="prose" style="margin-bottom:16px;">미니게임은 <strong>트리거(Flag) 기반</strong>으로 기동됩니다. 챕터 내 어떤 시점에서든 지정된 트리거가 발동되면 미니게임이 시작됩니다. 고정 순서를 전제하지 않으므로, 독백 뒤, 연출 뒤 등 시나리오에 따라 자유롭게 배치 가능합니다.</p>
+        <div style="font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:3px;color:var(--gray-500);margin-bottom:12px;text-transform:uppercase;">4.1.1 — 트리거 발동 메커니즘</div>
+
+        <p class="prose" style="margin-bottom:16px;">트리거 ID는 같아도 <strong>발동 메커니즘이 다릅니다.</strong> 어떤 트리거는 플레이어 행동이 발동시키고, 어떤 트리거는 Sequencer 타임라인이 발동시킵니다. 두 방식을 혼동하면 구현 방향이 달라지므로 반드시 구분합니다.</p>
+
+        <div class="table-wrap" style="margin-bottom:20px;">
+          <table>
+            <thead><tr><th>트리거</th><th>발동 주체</th><th>발동 방식</th><th>Sequencer 영향</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:11px;">DIALOGUE_START</code></td>
+                <td>Sequencer</td>
+                <td>타임라인 특정 시점에 Event Track으로 발동</td>
+                <td>영향 없음 (계속 재생)</td>
+              </tr>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:11px;">PLAYBACK_START</code></td>
+                <td>Sequencer</td>
+                <td>타임라인 특정 시점에 Event Track으로 발동</td>
+                <td>영향 없음 (계속 재생)</td>
+              </tr>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:11px;">MINIGAME_START</code></td>
+                <td>Sequencer</td>
+                <td>타임라인 특정 시점에 Event Track으로 발동</td>
+                <td><strong style="color:var(--red);">⏸ 일시정지</strong> — 미니게임 결과 대기</td>
+              </tr>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:11px;">MINIGAME_SUCCESS</code></td>
+                <td>미니게임 시스템</td>
+                <td>플레이어가 성공 조건 달성 시 이벤트 발행</td>
+                <td><strong style="color:#58C97A;">▶ 재개</strong> — 정지 시점부터 계속</td>
+              </tr>
+              <tr>
+                <td><code style="font-family:'Courier Prime',monospace;font-size:11px;">MINIGAME_FAIL</code></td>
+                <td>미니게임 시스템</td>
+                <td>플레이어 피해가 CRITICAL 도달 시 이벤트 발행</td>
+                <td><strong style="color:var(--red);">⏮ 처음으로</strong> — CHECKPOINT_READ 전환</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div style="font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:3px;color:var(--gray-500);margin-bottom:12px;text-transform:uppercase;">예시 — CH_01 전기 치료 타임라인</div>
+
+        <div style="background:var(--gray-900);border:1px solid var(--gray-700);padding:20px 24px;margin-bottom:20px;font-family:'Courier Prime',monospace;font-size:12px;line-height:2;">
+          <div style="color:var(--gray-500);font-size:10px;letter-spacing:2px;margin-bottom:12px;">SEQUENCER TIMELINE — CH_01</div>
+
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <span style="color:var(--gray-600);width:60px;flex-shrink:0;">T = 0s</span>
+              <span style="background:rgba(100,160,255,0.15);border:1px solid rgba(100,160,255,0.4);padding:2px 10px;color:#7EB8F7;font-size:11px;">Event: CH_01_DIALOGUE_START</span>
+              <span style="color:var(--gray-500);font-size:11px;">→ 토마스 독백 출력 시작</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;">
+              <span style="color:var(--gray-600);width:60px;flex-shrink:0;">T = 8s</span>
+              <span style="background:rgba(100,160,255,0.15);border:1px solid rgba(100,160,255,0.4);padding:2px 10px;color:#7EB8F7;font-size:11px;">Event: CH_01_PLAYBACK_START</span>
+              <span style="color:var(--gray-500);font-size:11px;">→ 행크 자동응답기 재생</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;">
+              <span style="color:var(--gray-600);width:60px;flex-shrink:0;">T = 18s</span>
+              <span style="background:rgba(192,57,43,0.2);border:1px solid rgba(192,57,43,0.5);padding:2px 10px;color:var(--red);font-size:11px;">Event: CH_01_MINIGAME_START ⏸</span>
+              <span style="color:var(--gray-500);font-size:11px;">→ Sequencer 일시정지. 미니게임 대기.</span>
+            </div>
+
+            <div style="margin:4px 0 4px 72px;border-left:2px dashed var(--gray-700);padding-left:12px;color:var(--gray-600);font-size:11px;">
+              ↕ 플레이어가 미니게임 진행 (시간 무제한)
+            </div>
+
+            <div style="display:flex;align-items:center;gap:12px;">
+              <span style="color:var(--gray-600);width:60px;flex-shrink:0;">성공 시</span>
+              <span style="background:rgba(39,174,96,0.15);border:1px solid rgba(39,174,96,0.4);padding:2px 10px;color:#58C97A;font-size:11px;">MINIGAME_SUCCESS ▶</span>
+              <span style="color:var(--gray-500);font-size:11px;">→ T=18s 이후 재개. 애니 귀환 연출 시작.</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;">
+              <span style="color:var(--gray-600);width:60px;flex-shrink:0;">실패 시</span>
+              <span style="background:rgba(192,57,43,0.15);border:1px solid rgba(192,57,43,0.4);padding:2px 10px;color:var(--red);font-size:11px;">MINIGAME_FAIL ⏮</span>
+              <span style="color:var(--gray-500);font-size:11px;">→ Flag 초기화. T=0s로 복귀.</span>
+            </div>
+          </div>
+        </div>
+
+        <p class="prose" style="margin-bottom:16px;">미니게임은 <strong>Sequencer가 발동시키고, 결과는 미니게임 시스템이 Sequencer에 알려주는</strong> 구조입니다. 고정 순서를 전제하지 않으므로 독백 뒤, 연출 뒤 등 타임라인 어느 위치에서도 미니게임을 배치할 수 있습니다.</p>
 
         <div class="diagram-wrap">
           <div class="mermaid">
@@ -2762,7 +2937,13 @@ flowchart TD
           </thead>
           <tbody>
             <tr>
-              <td style="font-family:'Courier Prime',monospace;">v2.9</td>
+              <td style="font-family:'Courier Prime',monospace;">v3.0</td>
+              <td><span class="chip chip-done" style="font-size:10px;">수정</span></td>
+              <td>3.3 챕터 생명주기 / 4.1.1 트리거 발동 메커니즘</td>
+              <td>뼈대 구조만 정의</td>
+              <td>Sequencer 기반 구조 전면 반영. MINIGAME_PAUSE 상태 추가. 타임라인 시각화·트리거 메커니즘 표·CH_01 예시 추가.</td>
+              <td></td>
+            </tr>
               <td><span class="chip chip-done" style="font-size:10px;">수정</span></td>
               <td>4.5 TargetNumber / 2.3.2 오브젝트 타입</td>
               <td>삼촌 이름 미기재 / PLAYBACK 타입 없음</td>
@@ -3017,7 +3198,7 @@ flowchart TD
     </div>
 
     <div class="footer">
-      MOTHER. PLEASE — 시스템 기획서 v2.9 · 쿠마마루 · 내부 개발 전용 문서
+      MOTHER. PLEASE — 시스템 기획서 v3.0.0 · 쿠마마루 · 내부 개발 전용 문서
     </div>
 
   </main>
@@ -3084,6 +3265,6 @@ flowchart TD
   });
 </script>
 
-<!-- tags: 개요, 시스템, 문서구조 -->
 </body>
 </html>
+<!-- tags: 개요, 시스템, 문서구조 -->

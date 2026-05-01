@@ -215,7 +215,7 @@
 <header class="doc-header">
   <div class="doc-title-bar">MOTHER.<span>PLEASE</span> — 시나리오 기획서</div>
   <div class="doc-meta">
-    <span class="version">v1.1.0</span>
+    <span class="version">v1.2.0</span>
     <span class="doc-date">2026-03-15</span>
     <span class="doc-author">쿠마마루</span>
   </div>
@@ -262,7 +262,7 @@
       <div class="cover-meta-grid">
         <div class="cover-meta-item">
           <div class="cover-meta-label">VERSION</div>
-          <div class="cover-meta-value red">v1.1.0</div>
+          <div class="cover-meta-value red">v1.2.0</div>
         </div>
         <div class="cover-meta-item">
           <div class="cover-meta-label">DATE</div>
@@ -280,7 +280,7 @@
     </div>
 
     <div class="warning-banner">
-      ⚠️ 미완성 항목 2건 포함 (TBD 0, WIP 2, 검토필요 0)
+      ⚠️ 미완성 항목 8건 포함 (TBD 4, WIP 4, 검토필요 0)
       — 6장 대사 스크립트 / 7장 연출 스크립트는 집필 후 별도 제공 예정.
     </div>
 
@@ -577,14 +577,36 @@
         <div style="font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:3px;color:var(--gray-500);margin-bottom:12px;text-transform:uppercase;">3.3.2 — 게임 내 역할</div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>역할</th><th>내용</th></tr></thead>
+            <thead><tr><th>역할</th><th>내용</th><th>확정 여부</th></tr></thead>
             <tbody>
-              <tr><td><strong>소품 공급원</strong></td><td>테이프형 자동응답기·링거·다이얼 전화기 등 최신 물품의 세계관적 근거.</td></tr>
-              <tr><td><strong>스토리 트리거</strong></td><td>자동응답기에 녹음된 행크의 음성 메시지가 챕터 중간 스토리 요소로 재생된다. 외부 세계와의 유일한 연결.</td></tr>
-              <tr><td><strong>결말 연결</strong></td><td>CH_04에서 토마스가 전화를 거는 대상. "지금 가고 있어"라는 행크의 목소리가 엔딩 연출과 겹친다.</td></tr>
-              <tr><td><strong>직접 등장 여부</strong></td><td>게임 내 직접 등장 없음. 음성과 물품으로만 존재한다.</td></tr>
+              <tr>
+                <td><strong>튜토리얼 전달</strong></td>
+                <td>CH_OPENING 시작 시 자동응답기 메시지로 조작 안내. "그래도 많이 좋아졌다면서? 왼손은 가끔 움직인다던데." → 왼손 조작 유도. 강요가 아닌 자연스러운 유도.</td>
+                <td><span style="color:#58C97A;font-weight:500;">확정</span></td>
+              </tr>
+              <tr>
+                <td><strong>제3자 스토리 전달</strong></td>
+                <td>각 챕터 중간, 행크의 녹음 메시지가 재생되며 외부인의 시점에서 애니의 상태 변화를 전달한다. 예: "애니가 많이 힘든가봐. 그 말도 안 되는 치료기계를 구해달라고 했어." (CH_02 확정)</td>
+                <td>CH_02 <span style="color:#58C97A;font-weight:500;">확정</span><br>CH_01·03·04 <span class="status-wip">[WIP]</span></td>
+              </tr>
+              <tr>
+                <td><strong>마지막 퍼즐 주체자</strong></td>
+                <td>CH_04에서 토마스가 전화를 거는 대상. CH_04 자동응답기 메시지에서 행크의 연락처를 플레이어가 인지하도록 설계. "지금 가고 있어"라는 행크의 목소리가 엔딩 연출과 겹친다.</td>
+                <td><span style="color:#58C97A;font-weight:500;">확정</span></td>
+              </tr>
+              <tr>
+                <td><strong>직접 등장</strong></td>
+                <td>게임 내 직접 등장 없음. 음성(자동응답기)과 물품으로만 존재한다.</td>
+                <td><span style="color:#58C97A;font-weight:500;">확정</span></td>
+              </tr>
             </tbody>
           </table>
+        </div>
+
+        <div style="height:16px;"></div>
+        <div class="callout">
+          <div class="callout-label">자동응답기 메시지 작성 방침</div>
+          <p>행크의 말투는 <strong style="color:var(--off-white);">무뚝뚝하지만 다정함이 배어있는</strong> 톤을 유지합니다. 직접적인 애정 표현 없이, 사실을 전달하는 말 속에 걱정이 묻어나는 방식입니다. 각 챕터 메시지 내용은 시나리오 집필 시 확정하며, 완성 후 <strong style="color:var(--off-white);">dialogue_data.xlsx</strong>의 HANK_REC 행에 입력합니다.</p>
         </div>
       </div>
 
@@ -921,8 +943,8 @@
       <div class="subsection" id="ch7-2">
         <div class="subsection-title"><span class="subsection-num">7.2</span>챕터별 연출 시퀀스 <span class="status-wip">[WIP]</span></div>
         <div class="callout">
-          <div class="callout-label">작성 대기</div>
-          <p>5장 챕터별 시나리오 방향을 기반으로 집필합니다. 완성 후 <strong style="color:var(--off-white);">direction_script.xlsx</strong>에 입력하고, 시스템 기획서 8장 챕터별 연출 개요를 업데이트합니다.</p>
+          <div class="callout-label">작업 순서</div>
+          <p><strong style="color:var(--off-white);">대사 스크립트(6장) 집필 완료 후</strong> 연출 시퀀스 작성을 시작합니다. 대사 내용이 확정되어야 연출 타이밍과 카메라 컷을 설계할 수 있습니다. 완성 후 <strong style="color:var(--off-white);">direction_script.xlsx</strong>에 입력하고, 시스템 기획서 8장 연출 개요를 업데이트합니다.</p>
         </div>
       </div>
     </section>
@@ -958,13 +980,21 @@
               <td>토마스(16세)·애니(34세) 상세 추가. 3.3 행크 칼드웰 신규 추가. 배경 서사 전부 기술.</td>
               <td></td>
             </tr>
+            <tr>
+              <td style="font-family:'Courier Prime',monospace;">v1.2.0</td>
+              <td>수정</td>
+              <td>3.3.2 행크 역할 상세화 / 7.2 연출 순서 명시</td>
+              <td>역할 4종 개요</td>
+              <td>자동응답기 3가지 역할 확정. CH_02 메시지 내용 확정. 연출 시퀀스 작성은 대사 완성 후 시작 명시.</td>
+              <td></td>
+            </tr>
           </tbody>
         </table>
       </div>
     </div>
 
     <div class="footer">
-      MOTHER. PLEASE — 시나리오 기획서 v1.1.0 · 쿠마마루 · 내부 개발 전용 문서
+      MOTHER. PLEASE — 시나리오 기획서 v1.2.0 · 쿠마마루 · 내부 개발 전용 문서
     </div>
 
   </main>
