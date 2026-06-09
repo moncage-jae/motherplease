@@ -1,0 +1,49 @@
+# =========================
+# Unreal Engine Build Output
+# =========================
+Binaries/
+Build/
+Intermediate/
+DerivedDataCache/
+
+# =========================
+# Unreal Saved (로컬 전용)
+# =========================
+Saved/
+
+# =========================
+# Visual Studio
+# =========================
+.vs/
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.VC.db
+*.VC.opendb
+*.opensdf
+*.sdf
+*.suo
+
+# =========================
+# Rider
+# =========================
+.idea/
+
+# =========================
+# 자동 생성 프로젝트 파일
+# =========================
+*.xcworkspace
+*.xcodeproj
+*.mk
+Makefile
+
+# =========================
+# 패키징 결과물
+# =========================
+Releases/
+
+# =========================
+# Swarm
+# =========================
+SwarmCache/
+SwarmAgent.log
