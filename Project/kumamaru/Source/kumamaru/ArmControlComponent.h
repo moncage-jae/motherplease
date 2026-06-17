@@ -50,6 +50,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Arm IK|Input", meta = (ClampMin = "0.0"))
 	float HandMoveSpeed = 50.0f;
 
+	/**
+	 * Initial hand target position, as an XY offset from the shoulder (in the shoulder's plane), used to seed
+	 * HandTargetLocation on BeginPlay instead of reading the hand bone's current pose. Marked SaveGame so a
+	 * future save/load system can persist and restore the hand position across sessions.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Arm IK|Input")
+	FVector2D InitialHandOffset = FVector2D(0.0f, -60.0f);
+
 	/** Interp speed for smoothing theta_upper / theta_lower toward their solved targets (FInterpTo). */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Arm IK|Smoothing", meta = (ClampMin = "0.0"))
 	float SmoothSpeed = 10.0f;

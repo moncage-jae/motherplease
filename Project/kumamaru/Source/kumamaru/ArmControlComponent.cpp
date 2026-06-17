@@ -15,6 +15,9 @@ UArmControlComponent::UArmControlComponent()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
+	// Default to a fully extended arm along the shoulder's -Y axis (offset magnitude == L1 + L2).
+	InitialHandOffset = FVector2D(0.0f, -(UpperArmLength + LowerArmLength));
+
 	// ...
 }
 
@@ -35,9 +38,14 @@ void UArmControlComponent::BeginPlay()
 		// Shoulder position is fixed for the lifetime of the component: captured once here.
 		ShoulderWorldLocation = SkeletalMesh->GetBoneLocation(UpperArmBoneName, EBoneSpaces::WorldSpace);
 
+		// --- Previous behavior (restore by uncommenting if InitialHandOffset approach is reverted) ---
 		// Start the hand target where the hand bone currently is so the arm doesn't snap on play.
-		HandTargetLocation = SkeletalMesh->GetBoneLocation(HandBoneName, EBoneSpaces::WorldSpace);
-		HandTargetLocation.Z = ShoulderWorldLocation.Z;
+		// HandTargetLocation = SkeletalMesh->GetBoneLocation(HandBoneName, EBoneSpaces::WorldSpace);
+		// HandTargetLocation.Z = ShoulderWorldLocation.Z;
+
+		// Seed the hand target from the designer-specified offset instead of the hand bone's pose,
+		// so the starting hand position is explicit and can later be restored from a save game.
+		HandTargetLocation = ShoulderWorldLocation + FVector(InitialHandOffset.X, InitialHandOffset.Y, 0.0f);
 
 		// Seed the smoothing state with the un-smoothed solve for the starting pose so the
 		// first tick doesn't interpolate from zero and snap the arm into place.
@@ -76,10 +84,10 @@ void UArmControlComponent::HandleDirectionalInput(float DeltaTime)
 	FVector2D MoveInput = FVector2D::ZeroVector;
 
 	// Arrow keys
-	if (PlayerController->IsInputKeyDown(EKeys::Up))    { MoveInput.X += 1.0f; }
-	if (PlayerController->IsInputKeyDown(EKeys::Down))  { MoveInput.X -= 1.0f; }
-	if (PlayerController->IsInputKeyDown(EKeys::Right)) { MoveInput.Y += 1.0f; }
-	if (PlayerController->IsInputKeyDown(EKeys::Left))  { MoveInput.Y -= 1.0f; }
+	if (PlayerController->IsInputKeyDown(EKeys::Up))    { MoveInput.Y -= 1.0f; }
+	if (PlayerController->IsInputKeyDown(EKeys::Down))  { MoveInput.Y += 1.0f; }
+	if (PlayerController->IsInputKeyDown(EKeys::Right)) { MoveInput.X += 1.0f; }
+	if (PlayerController->IsInputKeyDown(EKeys::Left))  { MoveInput.X -= 1.0f; }
 
 	// WASD
 	if (PlayerController->IsInputKeyDown(EKeys::W)) { MoveInput.Y += 1.0f; }
