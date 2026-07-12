@@ -12,6 +12,7 @@ class UCameraComponent;
 class UInputMappingContext;
 class UInputAction;
 class UArmControlComponent;
+class UKumaInputRouterComponent;
 struct FInputActionValue;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
@@ -49,6 +50,10 @@ class KUMAMARU_API AAMPPlayerCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Arm IK", meta = (AllowPrivateAccess = "true"))
 	UArmControlComponent* ArmControl;
 
+	/** Routes the fixed Kuma input types to the current gameplay receiver. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Kuma Input", meta = (AllowPrivateAccess = "true"))
+	UKumaInputRouterComponent* InputRouter;
+
 public:
 	// Sets default values for this character's properties
 	AAMPPlayerCharacter();
@@ -78,5 +83,6 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+	FORCEINLINE class UKumaInputRouterComponent* GetInputRouter() const { return InputRouter; }
 
 };

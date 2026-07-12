@@ -47,3 +47,6 @@ Releases/
 # =========================
 SwarmCache/
 SwarmAgent.log
+
+# Local agent instructions
+agents.md

@@ -1,0 +1,9 @@
+---,FromStepId,ResultId,ToStepId,Notes
+B_CH01_SEQ_01_Finished,CH01_SEQ_01,Finished,CH01_DLG_01,
+B_CH01_DLG_01_Completed,CH01_DLG_01,Completed,CH01_DLG_02,
+B_CH01_DLG_02_Completed,CH01_DLG_02,Completed,CH01_MG_00,
+B_CH01_MG_00_Success,CH01_MG_00,Success,CH01_DLG_03,
+B_CH01_MG_00_Failure,CH01_MG_00,Failure,CH01_DLG_01,
+B_CH01_DLG_03_Completed,CH01_DLG_03,Completed,CH01_MG_01,
+B_CH01_MG_01_Success,CH01_MG_01,Success,CH02_DLG_SUCCESS,
+B_CH01_MG_01_Failure,CH01_MG_01,Failure,CH02_DLG_FAIL,

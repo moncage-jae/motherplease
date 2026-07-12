@@ -3,6 +3,7 @@
 
 #include "AMPPlayerCharacter.h"
 #include "ArmControlComponent.h"
+#include "KumaInputRouterComponent.h"
 #include "Engine/LocalPlayer.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -56,6 +57,8 @@ AAMPPlayerCharacter::AAMPPlayerCharacter()
 	// Drives the TwoBoneIK arm targets (HandTargetLocation / JointTargetLocation) pushed to the AnimInstance
 	ArmControl = CreateDefaultSubobject<UArmControlComponent>(TEXT("ArmControl"));
 
+	InputRouter = CreateDefaultSubobject<UKumaInputRouterComponent>(TEXT("InputRouter"));
+
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
@@ -64,6 +67,11 @@ AAMPPlayerCharacter::AAMPPlayerCharacter()
 void AAMPPlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (InputRouter && ArmControl)
+	{
+		InputRouter->SetDefaultInputReceiver(ArmControl);
+	}
 	
 }
 
@@ -87,20 +95,7 @@ void AAMPPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 		}
 	}
 	
-	// Set up action bindings
-	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
-		
-		// Jumping
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
-
-		// Moving
-		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AAMPPlayerCharacter::Move);
-
-		// Looking
-		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AAMPPlayerCharacter::Look);
-	}
-	else
+	if (!Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
 		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
 	}

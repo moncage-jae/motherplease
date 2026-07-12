@@ -4,13 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "KumaInputReceiver.h"
 #include "ArmControlComponent.generated.h"
 
 class USkeletalMeshComponent;
 class UArmAnimInstance;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class KUMAMARU_API UArmControlComponent : public UActorComponent
+class KUMAMARU_API UArmControlComponent : public UActorComponent, public IKumaInputReceiver
 {
 	GENERATED_BODY()
 
@@ -25,6 +26,8 @@ protected:
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+	virtual void HandleKumaDirectionInput_Implementation(FVector2D DirectionValue, float DeltaTime) override;
 
 	/** Name of the upper arm bone (shoulder). */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Arm IK|Bones")
@@ -97,9 +100,6 @@ protected:
 	FVector2D PrevElbowPos = FVector2D::ZeroVector;
 
 private:
-	/** Reads arrow key / WASD state and moves HandTargetLocation across the shoulder's XY plane. */
-	void HandleDirectionalInput(float DeltaTime);
-
 	/** Keeps the hand target on the shoulder's Z plane and clamps its distance to L1 + L2. */
 	void ClampHandTargetToReach();
 

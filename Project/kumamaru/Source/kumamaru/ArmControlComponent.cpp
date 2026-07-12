@@ -5,8 +5,6 @@
 #include "MPAnimInstance.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "GameFramework/Actor.h"
-#include "GameFramework/Pawn.h"
-#include "GameFramework/PlayerController.h"
 
 // Sets default values for this component's properties
 UArmControlComponent::UArmControlComponent()
@@ -66,43 +64,23 @@ void UArmControlComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 		return;
 	}
 
-	HandleDirectionalInput(DeltaTime);
 	ClampHandTargetToReach();
 	SolveArmRotations(DeltaTime);
 	PushRotationsToAnimInstance();
 }
 
-void UArmControlComponent::HandleDirectionalInput(float DeltaTime)
+void UArmControlComponent::HandleKumaDirectionInput_Implementation(FVector2D DirectionValue, float DeltaTime)
 {
-	const APawn* OwningPawn = Cast<APawn>(GetOwner());
-	const APlayerController* PlayerController = OwningPawn ? Cast<APlayerController>(OwningPawn->GetController()) : nullptr;
-	if (!PlayerController)
+	if (DirectionValue.IsNearlyZero())
 	{
 		return;
 	}
 
-	FVector2D MoveInput = FVector2D::ZeroVector;
+	DirectionValue = DirectionValue.GetSafeNormal();
 
-	// Arrow keys
-	if (PlayerController->IsInputKeyDown(EKeys::Up))    { MoveInput.Y -= 1.0f; }
-	if (PlayerController->IsInputKeyDown(EKeys::Down))  { MoveInput.Y += 1.0f; }
-	if (PlayerController->IsInputKeyDown(EKeys::Right)) { MoveInput.X += 1.0f; }
-	if (PlayerController->IsInputKeyDown(EKeys::Left))  { MoveInput.X -= 1.0f; }
-
-	// WASD
-	if (PlayerController->IsInputKeyDown(EKeys::W)) { MoveInput.Y += 1.0f; }
-	if (PlayerController->IsInputKeyDown(EKeys::S)) { MoveInput.Y -= 1.0f; }
-	if (PlayerController->IsInputKeyDown(EKeys::D)) { MoveInput.X += 1.0f; }
-	if (PlayerController->IsInputKeyDown(EKeys::A)) { MoveInput.X -= 1.0f; }
-
-	if (!MoveInput.IsNearlyZero())
-	{
-		MoveInput = MoveInput.GetSafeNormal();
-
-		// Only X/Y are touched; Z stays locked to the shoulder's plane in ClampHandTargetToReach().
-		HandTargetLocation.X += MoveInput.X * HandMoveSpeed * DeltaTime;
-		HandTargetLocation.Y += MoveInput.Y * HandMoveSpeed * DeltaTime;
-	}
+	// Direction input is logical: X is right, Y is up. This arm maps Up to the shoulder's -Y plane.
+	HandTargetLocation.X += DirectionValue.X * HandMoveSpeed * DeltaTime;
+	HandTargetLocation.Y -= DirectionValue.Y * HandMoveSpeed * DeltaTime;
 }
 
 void UArmControlComponent::ClampHandTargetToReach()

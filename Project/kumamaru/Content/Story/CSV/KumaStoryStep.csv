@@ -1,0 +1,9 @@
+---,StepId,StepType,SpeakerId,DialogueText,TargetId,TypingSpeed,Tags
+CH01_SEQ_01,CH01_SEQ_01,Sequence,,,SEQ_CH01_Intro,0,
+CH01_DLG_01,CH01_DLG_01,Dialogue,Mom,"아들 어서와",,30,
+CH01_DLG_02,CH01_DLG_02,Dialogue,Son,"다녀왔어요",,30,
+CH01_MG_00,CH01_MG_00,MiniGame,,,MG_CH01_Tutorial,0,
+CH01_DLG_03,CH01_DLG_03,Dialogue,Mom,"잘했어. 다음으로 가자.",,30,
+CH01_MG_01,CH01_MG_01,MiniGame,,,MG_CH01_Main,0,
+CH02_DLG_SUCCESS,CH02_DLG_SUCCESS,Dialogue,Mom,"성공했구나. 이제 다음 챕터로 가자.",,30,
+CH02_DLG_FAIL,CH02_DLG_FAIL,Dialogue,Mom,"괜찮아. 다시 해보자.",,30,
