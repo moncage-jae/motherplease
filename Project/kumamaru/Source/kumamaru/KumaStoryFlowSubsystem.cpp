@@ -2,12 +2,9 @@
 
 #include "KumaStoryFlowSubsystem.h"
 
-#include "Blueprint/UserWidget.h"
 #include "Engine/DataTable.h"
-#include "Engine/World.h"
-#include "KumaDialogueTypingComponent.h"
-#include "TimerManager.h"
-#include "UObject/UObjectIterator.h"
+#include "Engine/GameInstance.h"
+#include "KumaDialogueSubsystem.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogKumaStory, Log, All);
 
@@ -28,27 +25,12 @@ void UKumaStoryFlowSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	Super::Initialize(Collection);
 
 	LoadStoryTablesFromPaths(DefaultStoryStepTablePath, DefaultStoryBranchTablePath);
-
-	TypingComponent = NewObject<UKumaDialogueTypingComponent>(this);
-	if (TypingComponent)
-	{
-		TypingComponent->OnCharacterRevealed.AddUObject(this, &UKumaStoryFlowSubsystem::HandleTypingTextUpdated);
-		TypingComponent->OnTypingCompleted.AddUObject(this, &UKumaStoryFlowSubsystem::HandleTypingCompleted);
-	}
+	BindDialogueSubsystem();
 }
 
 void UKumaStoryFlowSubsystem::Deinitialize()
 {
-	if (TypingComponent)
-	{
-		if (UWorld* World = GetWorld())
-		{
-			TypingComponent->CancelTyping(World->GetTimerManager());
-		}
-
-		TypingComponent->OnCharacterRevealed.RemoveAll(this);
-		TypingComponent->OnTypingCompleted.RemoveAll(this);
-	}
+	UnbindDialogueSubsystem();
 
 	ResetStory();
 
@@ -80,6 +62,8 @@ void UKumaStoryFlowSubsystem::ResetStory()
 	CurrentTargetId = NAME_None;
 	LastResultId = NAME_None;
 	RestoredStoryStepId = NAME_None;
+	WaitingStoryDialogueStepId = NAME_None;
+	bWaitingForStoryDialogue = false;
 	CompletedStepIds.Reset();
 }
 
@@ -91,18 +75,9 @@ bool UKumaStoryFlowSubsystem::AdvanceDialogue()
 		return false;
 	}
 
-	if (!TypingComponent)
+	if (UKumaDialogueSubsystem* DialogueSubsystem = GetDialogueSubsystem())
 	{
-		return CompleteCurrentStep(KumaStoryResult::Completed);
-	}
-
-	if (TypingComponent->IsTyping())
-	{
-		if (UWorld* World = GetWorld())
-		{
-			TypingComponent->SkipToEnd(World->GetTimerManager());
-			return true;
-		}
+		return DialogueSubsystem->AdvanceDialogue();
 	}
 
 	return CompleteCurrentStep(KumaStoryResult::Completed);
@@ -200,7 +175,8 @@ bool UKumaStoryFlowSubsystem::IsStoryActive() const
 
 bool UKumaStoryFlowSubsystem::IsDialogueTyping() const
 {
-	return TypingComponent && TypingComponent->IsTyping();
+	const UKumaDialogueSubsystem* DialogueSubsystem = GetDialogueSubsystem();
+	return DialogueSubsystem && DialogueSubsystem->IsDialogueTyping();
 }
 
 const FKumaStoryStepRow* UKumaStoryFlowSubsystem::FindStoryStep(FName StepId) const
@@ -262,6 +238,8 @@ void UKumaStoryFlowSubsystem::RestoreStorySaveData(const FKumaStorySaveData& InD
 	CurrentStepId = NAME_None;
 	CurrentStepType = NAME_None;
 	CurrentTargetId = NAME_None;
+	WaitingStoryDialogueStepId = NAME_None;
+	bWaitingForStoryDialogue = false;
 }
 
 bool UKumaStoryFlowSubsystem::ExecuteStep(FName StepId)
@@ -303,24 +281,30 @@ bool UKumaStoryFlowSubsystem::ExecuteStep(FName StepId)
 
 bool UKumaStoryFlowSubsystem::ExecuteDialogueStep(FName StepId, const FKumaStoryStepRow& StepRow)
 {
-	SetDialogueWidgetsVisible(true);
-	OnDialogueLineStarted.Broadcast(StepId, StepRow.SpeakerId, StepRow.DialogueText);
-
-	if (!TypingComponent)
+	UKumaDialogueSubsystem* DialogueSubsystem = GetDialogueSubsystem();
+	if (!DialogueSubsystem)
 	{
-		OnDialogueTextUpdated.Broadcast(StepRow.DialogueText);
-		OnDialogueLineCompleted.Broadcast(StepId);
-		return true;
+		UE_LOG(LogKumaStory, Error, TEXT("[KumaStory] Dialogue subsystem not found. Step=%s"), *StepId.ToString());
+		return false;
 	}
 
-	if (UWorld* World = GetWorld())
+	FKumaDialogueOptions Options;
+	Options.TypingSpeed = StepRow.TypingSpeed;
+	Options.AdvancePolicy = EKumaDialogueAdvancePolicy::WaitForInput;
+	Options.bAllowSkipTyping = true;
+	Options.bCloseWhenFinished = false;
+	Options.bBlockGameplayInput = true;
+
+	bWaitingForStoryDialogue = true;
+	WaitingStoryDialogueStepId = StepId;
+
+	if (!DialogueSubsystem->PlayDialogueLine(StepId, StepId, StepRow.SpeakerId, StepRow.DialogueText, Options))
 	{
-		TypingComponent->StartTyping(StepRow.DialogueText, StepRow.TypingSpeed, World->GetTimerManager());
-		return true;
+		bWaitingForStoryDialogue = false;
+		WaitingStoryDialogueStepId = NAME_None;
+		return false;
 	}
 
-	OnDialogueTextUpdated.Broadcast(StepRow.DialogueText);
-	OnDialogueLineCompleted.Broadcast(StepId);
 	return true;
 }
 
@@ -381,6 +365,10 @@ bool UKumaStoryFlowSubsystem::AdvanceFromResult(FName FromStepId, FName ResultId
 		CurrentStepId = NAME_None;
 		CurrentStepType = NAME_None;
 		CurrentTargetId = NAME_None;
+		if (UKumaDialogueSubsystem* DialogueSubsystem = GetDialogueSubsystem())
+		{
+			DialogueSubsystem->CloseDialogue();
+		}
 		OnStoryFlowFinished.Broadcast(FromStepId, ResultId);
 		return false;
 	}
@@ -395,51 +383,16 @@ void UKumaStoryFlowSubsystem::CloseDialogueForNonDialogueStep(FName NextStepId, 
 		return;
 	}
 
-	SetDialogueWidgetsVisible(false);
-	OnDialogueLineStarted.Broadcast(NextStepId, FName(TEXT(" ")), FText::GetEmpty());
-	OnDialogueTextUpdated.Broadcast(FText::GetEmpty());
-	OnDialogueLineCompleted.Broadcast(NextStepId);
-	OnDialogueClosed.Broadcast(NextStepId);
-}
-
-void UKumaStoryFlowSubsystem::SetDialogueWidgetsVisible(bool bVisible) const
-{
-	UWorld* World = GetWorld();
-	if (!World)
+	if (bWaitingForStoryDialogue && WaitingStoryDialogueStepId == NextStepId)
 	{
-		return;
+		bWaitingForStoryDialogue = false;
+		WaitingStoryDialogueStepId = NAME_None;
 	}
 
-	const ESlateVisibility TargetVisibility = bVisible ? ESlateVisibility::Visible : ESlateVisibility::Collapsed;
-
-	for (TObjectIterator<UUserWidget> It; It; ++It)
+	if (UKumaDialogueSubsystem* DialogueSubsystem = GetDialogueSubsystem())
 	{
-		UUserWidget* Widget = *It;
-		if (!IsValid(Widget) || Widget->GetWorld() != World || !IsDialogueWidget(Widget))
-		{
-			continue;
-		}
-
-		Widget->SetVisibility(TargetVisibility);
+		DialogueSubsystem->CloseDialogue();
 	}
-}
-
-bool UKumaStoryFlowSubsystem::IsDialogueWidget(const UUserWidget* Widget) const
-{
-	if (!Widget || DialogueWidgetClassName.IsNone())
-	{
-		return false;
-	}
-
-	for (const UClass* WidgetClass = Widget->GetClass(); WidgetClass; WidgetClass = WidgetClass->GetSuperClass())
-	{
-		if (WidgetClass->GetFName() == DialogueWidgetClassName)
-		{
-			return true;
-		}
-	}
-
-	return false;
 }
 
 bool UKumaStoryFlowSubsystem::ValidateStoryTables() const
@@ -495,12 +448,73 @@ FName UKumaStoryFlowSubsystem::ResolveStepId(FName RowName, const FKumaStoryStep
 	return StepRow.StepId.IsNone() ? RowName : StepRow.StepId;
 }
 
-void UKumaStoryFlowSubsystem::HandleTypingTextUpdated(const FText& PartialText)
+UKumaDialogueSubsystem* UKumaStoryFlowSubsystem::GetDialogueSubsystem() const
+{
+	if (UGameInstance* GameInstance = GetGameInstance())
+	{
+		return GameInstance->GetSubsystem<UKumaDialogueSubsystem>();
+	}
+
+	return nullptr;
+}
+
+void UKumaStoryFlowSubsystem::BindDialogueSubsystem()
+{
+	if (UKumaDialogueSubsystem* DialogueSubsystem = GetDialogueSubsystem())
+	{
+		DialogueSubsystem->OnDialogueLineStarted.AddDynamic(this, &UKumaStoryFlowSubsystem::HandleDialogueLineStarted);
+		DialogueSubsystem->OnDialogueTextUpdated.AddDynamic(this, &UKumaStoryFlowSubsystem::HandleDialogueTextUpdated);
+		DialogueSubsystem->OnDialogueLineCompleted.AddDynamic(this, &UKumaStoryFlowSubsystem::HandleDialogueLineCompleted);
+		DialogueSubsystem->OnDialogueClosed.AddDynamic(this, &UKumaStoryFlowSubsystem::HandleDialogueClosed);
+		DialogueSubsystem->OnDialogueSequenceFinished.AddDynamic(this, &UKumaStoryFlowSubsystem::HandleDialogueSequenceFinished);
+	}
+}
+
+void UKumaStoryFlowSubsystem::UnbindDialogueSubsystem()
+{
+	if (UKumaDialogueSubsystem* DialogueSubsystem = GetDialogueSubsystem())
+	{
+		DialogueSubsystem->OnDialogueLineStarted.RemoveDynamic(this, &UKumaStoryFlowSubsystem::HandleDialogueLineStarted);
+		DialogueSubsystem->OnDialogueTextUpdated.RemoveDynamic(this, &UKumaStoryFlowSubsystem::HandleDialogueTextUpdated);
+		DialogueSubsystem->OnDialogueLineCompleted.RemoveDynamic(this, &UKumaStoryFlowSubsystem::HandleDialogueLineCompleted);
+		DialogueSubsystem->OnDialogueClosed.RemoveDynamic(this, &UKumaStoryFlowSubsystem::HandleDialogueClosed);
+		DialogueSubsystem->OnDialogueSequenceFinished.RemoveDynamic(this, &UKumaStoryFlowSubsystem::HandleDialogueSequenceFinished);
+	}
+}
+
+void UKumaStoryFlowSubsystem::HandleDialogueLineStarted(FName LineId, FName SpeakerId, const FText& FullText)
+{
+	OnDialogueLineStarted.Broadcast(LineId, SpeakerId, FullText);
+}
+
+void UKumaStoryFlowSubsystem::HandleDialogueTextUpdated(const FText& PartialText)
 {
 	OnDialogueTextUpdated.Broadcast(PartialText);
 }
 
-void UKumaStoryFlowSubsystem::HandleTypingCompleted()
+void UKumaStoryFlowSubsystem::HandleDialogueLineCompleted(FName LineId)
 {
-	OnDialogueLineCompleted.Broadcast(CurrentStepId);
+	OnDialogueLineCompleted.Broadcast(LineId);
+}
+
+void UKumaStoryFlowSubsystem::HandleDialogueClosed(FName LastLineId)
+{
+	OnDialogueClosed.Broadcast(LastLineId);
+}
+
+void UKumaStoryFlowSubsystem::HandleDialogueSequenceFinished(FName OwnerId, FName LastLineId)
+{
+	if (!bWaitingForStoryDialogue || OwnerId != WaitingStoryDialogueStepId)
+	{
+		return;
+	}
+
+	if (!IsCurrentStepType(TEXT("Dialogue")) && !IsCurrentStepType(TEXT("Dialog")))
+	{
+		return;
+	}
+
+	bWaitingForStoryDialogue = false;
+	WaitingStoryDialogueStepId = NAME_None;
+	CompleteCurrentStep(KumaStoryResult::Completed);
 }

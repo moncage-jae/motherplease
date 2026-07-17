@@ -8,8 +8,7 @@
 #include "KumaStoryFlowSubsystem.generated.h"
 
 class UDataTable;
-class UKumaDialogueTypingComponent;
-class UUserWidget;
+class UKumaDialogueSubsystem;
 
 UCLASS()
 class KUMAMARU_API UKumaStoryFlowSubsystem : public UGameInstanceSubsystem
@@ -112,16 +111,29 @@ private:
 	bool CompleteCurrentStep(FName ResultId);
 	bool AdvanceFromResult(FName FromStepId, FName ResultId);
 	void CloseDialogueForNonDialogueStep(FName NextStepId, const FKumaStoryStepRow& StepRow);
-	void SetDialogueWidgetsVisible(bool bVisible) const;
-	bool IsDialogueWidget(const UUserWidget* Widget) const;
 	bool ValidateStoryTables() const;
 	bool IsCurrentStepType(const TCHAR* TypeName) const;
 	bool IsStepType(FName StepType, const TCHAR* TypeName) const;
 	bool IsStepTypeAny(FName StepType, const TCHAR* FirstTypeName, const TCHAR* SecondTypeName) const;
 	FName ResolveStepId(FName RowName, const FKumaStoryStepRow& StepRow) const;
+	UKumaDialogueSubsystem* GetDialogueSubsystem() const;
+	void BindDialogueSubsystem();
+	void UnbindDialogueSubsystem();
 
-	void HandleTypingTextUpdated(const FText& PartialText);
-	void HandleTypingCompleted();
+	UFUNCTION()
+	void HandleDialogueLineStarted(FName LineId, FName SpeakerId, const FText& FullText);
+
+	UFUNCTION()
+	void HandleDialogueTextUpdated(const FText& PartialText);
+
+	UFUNCTION()
+	void HandleDialogueLineCompleted(FName LineId);
+
+	UFUNCTION()
+	void HandleDialogueClosed(FName LastLineId);
+
+	UFUNCTION()
+	void HandleDialogueSequenceFinished(FName OwnerId, FName LastLineId);
 
 	UPROPERTY(EditDefaultsOnly, Category = "Kuma Story")
 	FName DefaultStartStepId = FName(TEXT("CH01_SEQ_01"));
@@ -132,22 +144,18 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Kuma Story|Data")
 	FString DefaultStoryBranchTablePath = TEXT("/Game/Test/Data/T_DataTables/DT_KumaStoryBranch.DT_KumaStoryBranch");
 
-	UPROPERTY(EditDefaultsOnly, Category = "Kuma Story|Dialogue")
-	FName DialogueWidgetClassName = FName(TEXT("WBP_Dialogue_C"));
-
 	UPROPERTY(Transient)
 	TObjectPtr<UDataTable> StoryStepTable;
 
 	UPROPERTY(Transient)
 	TObjectPtr<UDataTable> StoryBranchTable;
 
-	UPROPERTY(Transient)
-	TObjectPtr<UKumaDialogueTypingComponent> TypingComponent;
-
 	FName CurrentStepId;
 	FName CurrentStepType;
 	FName CurrentTargetId;
 	FName LastResultId;
 	FName RestoredStoryStepId;
+	FName WaitingStoryDialogueStepId;
+	bool bWaitingForStoryDialogue = false;
 	TArray<FName> CompletedStepIds;
 };
