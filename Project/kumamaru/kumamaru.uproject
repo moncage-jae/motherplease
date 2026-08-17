@@ -24,6 +24,10 @@
 		{
 			"Name": "StudioTelemetry",
 			"Enabled": false
+		},
+		{
+			"Name": "Volumetrics",
+			"Enabled": true
 		}
 	]
 }
