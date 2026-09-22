@@ -13,6 +13,9 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "InputAction.h"
+#include "InputMappingContext.h"
+#include "UObject/ConstructorHelpers.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -59,6 +62,15 @@ AAMPPlayerCharacter::AAMPPlayerCharacter()
 
 	InputRouter = CreateDefaultSubobject<UKumaInputRouterComponent>(TEXT("InputRouter"));
 
+	static ConstructorHelpers::FObjectFinder<UInputMappingContext> DefaultContextFinder(TEXT("/Game/ThirdPerson/Input/IMC_Default.IMC_Default"));
+	static ConstructorHelpers::FObjectFinder<UInputAction> JumpActionFinder(TEXT("/Game/ThirdPerson/Input/Actions/IA_Jump.IA_Jump"));
+	static ConstructorHelpers::FObjectFinder<UInputAction> MoveActionFinder(TEXT("/Game/ThirdPerson/Input/Actions/IA_Move.IA_Move"));
+	static ConstructorHelpers::FObjectFinder<UInputAction> LookActionFinder(TEXT("/Game/ThirdPerson/Input/Actions/IA_Look.IA_Look"));
+	DefaultMappingContext = DefaultContextFinder.Object;
+	JumpAction = JumpActionFinder.Object;
+	MoveAction = MoveActionFinder.Object;
+	LookAction = LookActionFinder.Object;
+
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
@@ -67,6 +79,11 @@ AAMPPlayerCharacter::AAMPPlayerCharacter()
 void AAMPPlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	if (FollowCamera)
+	{
+		LevelStartCameraLocation = FollowCamera->GetComponentLocation();
+		bHasLevelStartCameraLocation = true;
+	}
 
 	if (InputRouter && ArmControl)
 	{
@@ -86,6 +103,7 @@ void AAMPPlayerCharacter::Tick(float DeltaTime)
 void AAMPPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
+	UE_LOG(LogTemplateCharacter, Log, TEXT("[MPInput] Setup pawn=%s controller=%s mapping=%s input=%s"), *GetName(), *GetNameSafe(GetController()), *GetNameSafe(DefaultMappingContext), *GetNameSafe(PlayerInputComponent));
 // Add Input Mapping Context
 	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
 	{
@@ -95,10 +113,26 @@ void AAMPPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 		}
 	}
 	
-	if (!Cast<UEnhancedInputComponent>(PlayerInputComponent))
+	UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent);
+	if (!EnhancedInputComponent)
 	{
 		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
 	}
+	else
+	{
+		if (JumpAction)
+		{
+			EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
+			EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+		}
+		if (MoveAction)
+		{
+			EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AAMPPlayerCharacter::Move);
+		}
+	}
+
+	PlayerInputComponent->BindAxis(TEXT("MP_LookYaw"), this, &AAMPPlayerCharacter::HandleMiniGameLookYaw);
+	PlayerInputComponent->BindAxis(TEXT("MP_LookPitch"), this, &AAMPPlayerCharacter::HandleMiniGameLookPitch);
 }
 	void AAMPPlayerCharacter::Move(const FInputActionValue& Value)
 {
@@ -134,6 +168,51 @@ void AAMPPlayerCharacter::Look(const FInputActionValue& Value)
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
+}
+
+void AAMPPlayerCharacter::HandleMiniGameLookYaw(float Value)
+{
+	static bool bLoggedYaw = false;
+	if (!FMath::IsNearlyZero(Value) && !bLoggedYaw)
+	{
+		bLoggedYaw = true;
+		UE_LOG(LogTemplateCharacter, Log, TEXT("[MPInput] MP_LookYaw received. Pawn=%s Value=%f"), *GetName(), Value);
+	}
+	AddControllerYawInput(Value);
+}
+
+void AAMPPlayerCharacter::HandleMiniGameLookPitch(float Value)
+{
+	static bool bLoggedPitch = false;
+	if (!FMath::IsNearlyZero(Value) && !bLoggedPitch)
+	{
+		bLoggedPitch = true;
+		UE_LOG(LogTemplateCharacter, Log, TEXT("[MPInput] MP_LookPitch received. Pawn=%s Value=%f"), *GetName(), Value);
+	}
+	AddControllerPitchInput(-Value);
+}
+
+void AAMPPlayerCharacter::SetMiniGameLookCameraEnabled(bool bEnabled)
+{
+	if (CameraBoom && FollowCamera)
+	{
+		// Keep the exact view location from level start, then rotate there in place.
+		// This is deliberately not an orbit around the character's root component.
+		if (!bHasLevelStartCameraLocation)
+		{
+			LevelStartCameraLocation = FollowCamera->GetComponentLocation();
+			bHasLevelStartCameraLocation = true;
+		}
+		CameraBoom->SetAbsolute(true, false, false);
+		CameraBoom->SetWorldLocation(LevelStartCameraLocation);
+		CameraBoom->TargetArmLength = 0.f;
+		CameraBoom->bUsePawnControlRotation = true;
+	}
+	if (FollowCamera)
+	{
+		FollowCamera->bUsePawnControlRotation = false;
+	}
+	UE_LOG(LogTemplateCharacter, Log, TEXT("[MPInput] MiniGame camera input=%s boomUsesControlRotation=%s armLength=%.1f startLocation=%s"), bEnabled ? TEXT("enabled") : TEXT("locked"), CameraBoom && CameraBoom->bUsePawnControlRotation ? TEXT("true") : TEXT("false"), CameraBoom ? CameraBoom->TargetArmLength : -1.f, *LevelStartCameraLocation.ToCompactString());
 }
 
 

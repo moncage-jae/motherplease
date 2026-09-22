@@ -19,6 +19,21 @@ public:
 	// Sets default values for this component's properties
 	UArmControlComponent();
 
+	/** Enables or disables player input that moves the arm target. */
+	UFUNCTION(BlueprintCallable, Category = "Arm IK|Input")
+	void SetArmInputEnabled(bool bEnabled);
+
+	UFUNCTION(BlueprintPure, Category = "Arm IK|Input")
+	bool IsArmInputEnabled() const { return bArmInputEnabled; }
+
+	/** Returns the current world position of the animated hand bone. */
+	UFUNCTION(BlueprintPure, Category = "Arm IK|Input")
+	FVector GetHandWorldLocation() const;
+
+	/** Restores the hand target and IK smoothing state to the configured starting pose. */
+	UFUNCTION(BlueprintCallable, Category = "Arm IK|Input")
+	void ResetHandTarget();
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
@@ -28,6 +43,10 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	virtual void HandleKumaDirectionInput_Implementation(FVector2D DirectionValue, float DeltaTime) override;
+
+	/** Name of the upper arm bone (shoulder). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Arm IK|Input")
+	bool bArmInputEnabled = true;
 
 	/** Name of the upper arm bone (shoulder). */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Arm IK|Bones")

@@ -109,6 +109,12 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Kuma Dialogue")
 	FKumaDialogueOptions GetActiveOptions() const;
 
+	/** Registers the viewport dialogue widget created for the active level. */
+	void RegisterDialogueWidget(UUserWidget* Widget);
+
+	/** Removes the widget registration when that viewport widget is destroyed. */
+	void UnregisterDialogueWidget(UUserWidget* Widget);
+
 	UPROPERTY(BlueprintAssignable, Category = "Kuma Dialogue|Events")
 	FKumaDialogueLineStartedSignature OnDialogueLineStarted;
 
@@ -145,10 +151,13 @@ private:
 	FText NormalizeDialogueText(const FText& Text) const;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Kuma Dialogue")
-	FName DialogueWidgetClassName = FName(TEXT("WBP_Dialogue_C"));
+	FName DialogueWidgetClassName = FName(TEXT("KumaDialogueBoxWidget"));
 
 	UPROPERTY(Transient)
 	TObjectPtr<UKumaDialogueTypingComponent> TypingComponent;
+
+	/** Direct reference avoids relying on a runtime class-name search to show the dialogue UI. */
+	TWeakObjectPtr<UUserWidget> RegisteredDialogueWidget;
 
 	TArray<FKumaDialogueLine> ActiveLines;
 	FName ActiveOwnerId;

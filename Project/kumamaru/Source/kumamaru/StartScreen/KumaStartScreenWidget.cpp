@@ -2,6 +2,7 @@
 
 #include "KumaStartScreenWidget.h"
 
+#include "../KumaGameInstance.h"
 #include "Blueprint/WidgetTree.h"
 #include "Components/Border.h"
 #include "Components/Button.h"
@@ -42,7 +43,7 @@ FKumaStartChapterCardData::FKumaStartChapterCardData()
 
 UKumaStartScreenWidget::UKumaStartScreenWidget(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
-	, GameplayLevelName(TEXT("ThirdPersonMap"))
+	, GameplayLevelName(TEXT("C_Test"))
 	, bOpenChapterLevelOnCardClick(false)
 	, bAutoplayBackgroundMedia(true)
 	, LogoSpriteFrameInterval(0.12f)
@@ -469,6 +470,13 @@ void UKumaStartScreenWidget::ShowSaveResetWarningPopup()
 
 void UKumaStartScreenWidget::OpenGameplayLevel()
 {
+	// Temporary development shortcut: restore the Chapter 1 OpenLevel call here later.
+	if (UKumaGameInstance* KumaGameInstance = GetGameInstance<UKumaGameInstance>())
+	{
+		KumaGameInstance->OpenChapterTwo();
+		return;
+	}
+
 	if (GameplayLevelName.IsNone())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[KumaStartScreen] GameplayLevelName is empty."));

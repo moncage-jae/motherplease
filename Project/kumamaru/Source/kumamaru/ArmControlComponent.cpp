@@ -69,9 +69,34 @@ void UArmControlComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 	PushRotationsToAnimInstance();
 }
 
+void UArmControlComponent::SetArmInputEnabled(bool bEnabled)
+{
+	bArmInputEnabled = bEnabled;
+}
+
+FVector UArmControlComponent::GetHandWorldLocation() const
+{
+	return SkeletalMesh
+		? SkeletalMesh->GetBoneLocation(HandBoneName, EBoneSpaces::WorldSpace)
+		: HandTargetLocation;
+}
+
+void UArmControlComponent::ResetHandTarget()
+{
+	if (!SkeletalMesh)
+	{
+		return;
+	}
+
+	ShoulderWorldLocation = SkeletalMesh->GetBoneLocation(UpperArmBoneName, EBoneSpaces::WorldSpace);
+	HandTargetLocation = ShoulderWorldLocation + FVector(InitialHandOffset.X, InitialHandOffset.Y, 0.f);
+	PrevElbowPos = ComputeTargetElbowPosition(PrevThetaUpper);
+	PrevThetaLower = FMath::Atan2(HandTargetLocation.Y - PrevElbowPos.Y, HandTargetLocation.X - PrevElbowPos.X);
+}
+
 void UArmControlComponent::HandleKumaDirectionInput_Implementation(FVector2D DirectionValue, float DeltaTime)
 {
-	if (DirectionValue.IsNearlyZero())
+	if (!bArmInputEnabled || DirectionValue.IsNearlyZero())
 	{
 		return;
 	}

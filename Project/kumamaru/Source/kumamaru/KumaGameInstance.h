@@ -7,8 +7,10 @@
 #include "KumaGameInstance.generated.h"
 
 class UKumaSaveGame;
+class AKumaChapterOneDirector;
+class AKumaChapterTwoDirector;
 
-UCLASS()
+UCLASS(Config = Game)
 class KUMAMARU_API UKumaGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
@@ -38,7 +40,16 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Kuma Save")
 	UKumaSaveGame* GetCurrentKumaSave() const;
 
+	UFUNCTION(BlueprintCallable, Category = "Kuma Chapter")
+	void OpenChapterTwo();
+
 protected:
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Kuma Chapter 1")
+	bool bAutoStartChapterOne = true;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Kuma Chapter 1")
+	FName ChapterOneLevelName = FName(TEXT("MP_Room_WIP_V04_JM"));
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Kuma Save")
 	FString DefaultSaveSlotName = TEXT("KumaSlot_0");
 
@@ -50,9 +61,19 @@ protected:
 
 private:
 	bool bApplyKumaSaveAfterMapLoad = false;
+	bool bStartChapterTwoAfterMapLoad = false;
+
+	UPROPERTY(Transient)
+	TObjectPtr<AKumaChapterOneDirector> ChapterOneDirector;
+
+	UPROPERTY(Transient)
+	TObjectPtr<AKumaChapterTwoDirector> ChapterTwoDirector;
 
 	void CaptureWorldState(UKumaSaveGame* SaveGameObject) const;
 	bool ApplyWorldState(const UKumaSaveGame* SaveGameObject) const;
 	void HandlePostLoadMapWithWorld(UWorld* LoadedWorld);
 	void ApplyPendingWorldState();
+	void TryStartChapterOne(UWorld* LoadedWorld);
+	void SpawnChapterOneDirector(UWorld* LoadedWorld);
+	void ShowChapterTwoIntro(UWorld* LoadedWorld);
 };

@@ -128,13 +128,34 @@ APlayerController* UKumaInputRouterComponent::GetPlayerController()
 
 void UKumaInputRouterComponent::RouteDirectionInput(float DeltaTime)
 {
-	if (!bReadDirectionKeys)
+	APlayerController* PlayerController = GetPlayerController();
+	if (!PlayerController)
 	{
 		return;
 	}
 
-	APlayerController* PlayerController = GetPlayerController();
-	if (!PlayerController)
+#if !UE_BUILD_SHIPPING
+	// Log each physical direction-key press once. This stays separate from the
+	// continuous input below, so BP_Arm keeps receiving its normal movement input.
+	if (PlayerController->WasInputKeyJustPressed(EKeys::Up))
+	{
+		UE_LOG(LogKumaInputRouter, Log, TEXT("[KumaInput] Keyboard received: Up"));
+	}
+	if (PlayerController->WasInputKeyJustPressed(EKeys::Down))
+	{
+		UE_LOG(LogKumaInputRouter, Log, TEXT("[KumaInput] Keyboard received: Down"));
+	}
+	if (PlayerController->WasInputKeyJustPressed(EKeys::Left))
+	{
+		UE_LOG(LogKumaInputRouter, Log, TEXT("[KumaInput] Keyboard received: Left"));
+	}
+	if (PlayerController->WasInputKeyJustPressed(EKeys::Right))
+	{
+		UE_LOG(LogKumaInputRouter, Log, TEXT("[KumaInput] Keyboard received: Right"));
+	}
+#endif
+
+	if (!bReadDirectionKeys)
 	{
 		return;
 	}

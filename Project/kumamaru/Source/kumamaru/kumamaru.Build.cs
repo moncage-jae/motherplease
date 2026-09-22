@@ -17,7 +17,10 @@ public class kumamaru : ModuleRules
 			"EnhancedInput",
 			"UMG",
 			"SlateCore",
-			"MediaAssets"
+			"MediaAssets",
+			"LevelSequence",
+			"MovieScene",
+			"GameplayCameras"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] { });

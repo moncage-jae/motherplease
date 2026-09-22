@@ -2,16 +2,79 @@
 
 #include "KumaGameInstance.h"
 
+#include "KumaChapterOneDirector.h"
+#include "KumaChapterTwoDirector.h"
+#include "KumaChapterIntroWidget.h"
 #include "KumaSaveGame.h"
 #include "KumaStoryFlowSubsystem.h"
+#include "Components/StaticMeshComponent.h"
+#include "Engine/StaticMesh.h"
 #include "Engine/World.h"
+#include "EngineUtils.h"
+#include "GameFramework/Actor.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/Controller.h"
+#include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
 #include "UObject/UObjectGlobals.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogKumaSave, Log, All);
+
+namespace
+{
+	void SetChapterOnlyModelsVisible(UWorld* World, bool bVisible)
+	{
+		if (!World)
+		{
+			return;
+		}
+
+		static const TSet<FName> TargetModelNames = {
+			TEXT("SM_IR2"),
+			TEXT("SM_IR_RMC_IR_RMC"),
+			TEXT("SM_IR_RMC_IR_RMC_Button")
+		};
+
+		int32 ChangedComponentCount = 0;
+		for (TActorIterator<AActor> ActorIt(World); ActorIt; ++ActorIt)
+		{
+			AActor* Actor = *ActorIt;
+			if (!Actor)
+			{
+				continue;
+			}
+
+			TInlineComponentArray<UStaticMeshComponent*> MeshComponents;
+			Actor->GetComponents(MeshComponents);
+			for (UStaticMeshComponent* MeshComponent : MeshComponents)
+			{
+				if (!MeshComponent)
+				{
+					continue;
+				}
+
+				const UStaticMesh* StaticMesh = MeshComponent->GetStaticMesh();
+				bool bIsTargetModel = TargetModelNames.Contains(Actor->GetFName())
+					|| TargetModelNames.Contains(MeshComponent->GetFName())
+					|| (StaticMesh && TargetModelNames.Contains(StaticMesh->GetFName()));
+#if WITH_EDITOR
+				bIsTargetModel |= TargetModelNames.Contains(FName(*Actor->GetActorLabel()));
+#endif
+				if (!bIsTargetModel)
+				{
+					continue;
+				}
+
+				MeshComponent->SetVisibility(bVisible, true);
+				MeshComponent->SetHiddenInGame(!bVisible, true);
+				++ChangedComponentCount;
+			}
+		}
+
+		UE_LOG(LogKumaSave, Log, TEXT("[KumaChapterVisibility] %d target model component(s) are now %s."), ChangedComponentCount, bVisible ? TEXT("visible") : TEXT("hidden"));
+	}
+}
 
 void UKumaGameInstance::Init()
 {
@@ -191,12 +254,59 @@ bool UKumaGameInstance::ApplyWorldState(const UKumaSaveGame* SaveGameObject) con
 
 void UKumaGameInstance::HandlePostLoadMapWithWorld(UWorld* LoadedWorld)
 {
+	if (bStartChapterTwoAfterMapLoad && LoadedWorld && LoadedWorld->IsGameWorld())
+	{
+		bStartChapterTwoAfterMapLoad = false;
+		ChapterOneDirector = nullptr;
+		ChapterTwoDirector = nullptr;
+		LoadedWorld->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &UKumaGameInstance::ShowChapterTwoIntro, LoadedWorld));
+	}
+	else
+	{
+		TryStartChapterOne(LoadedWorld);
+	}
+
 	if (!bApplyKumaSaveAfterMapLoad || !LoadedWorld)
 	{
 		return;
 	}
 
 	LoadedWorld->GetTimerManager().SetTimerForNextTick(this, &UKumaGameInstance::ApplyPendingWorldState);
+}
+
+void UKumaGameInstance::OpenChapterTwo()
+{
+	bStartChapterTwoAfterMapLoad = true;
+	UGameplayStatics::OpenLevel(this, ChapterOneLevelName);
+}
+
+void UKumaGameInstance::ShowChapterTwoIntro(UWorld* LoadedWorld)
+{
+	if (!LoadedWorld) return;
+	SetChapterOnlyModelsVisible(LoadedWorld, true);
+	ChapterTwoDirector = LoadedWorld->SpawnActor<AKumaChapterTwoDirector>();
+	if (!ChapterTwoDirector)
+	{
+		UE_LOG(LogKumaSave, Error, TEXT("Failed to spawn the Chapter 2 director in level %s."), *LoadedWorld->GetMapName());
+		return;
+	}
+
+	APlayerController* PC = LoadedWorld->GetFirstPlayerController();
+	if (!PC)
+	{
+		ChapterTwoDirector->StartChapterTwo();
+		return;
+	}
+	UKumaChapterIntroWidget* Intro = CreateWidget<UKumaChapterIntroWidget>(PC, UKumaChapterIntroWidget::StaticClass());
+	if (!Intro)
+	{
+		ChapterTwoDirector->StartChapterTwo();
+		return;
+	}
+	Intro->SetTitle(FText::FromString(TEXT("CHAPTER 2\nMother, Please")));
+	Intro->OnIntroFinished.AddUObject(ChapterTwoDirector, &AKumaChapterTwoDirector::StartChapterTwo);
+	Intro->AddToViewport(100);
+	Intro->PlayIntro(1.5f, 1.5f);
 }
 
 void UKumaGameInstance::ApplyPendingWorldState()
@@ -208,4 +318,41 @@ void UKumaGameInstance::ApplyPendingWorldState()
 
 	bApplyKumaSaveAfterMapLoad = false;
 	ApplyWorldState(CurrentKumaSave);
+}
+
+void UKumaGameInstance::TryStartChapterOne(UWorld* LoadedWorld)
+{
+	if (!bAutoStartChapterOne || !LoadedWorld || !LoadedWorld->IsGameWorld())
+	{
+		return;
+	}
+
+	const FName CurrentLevelName(*UGameplayStatics::GetCurrentLevelName(LoadedWorld, true));
+	if (ChapterOneLevelName.IsNone() || !CurrentLevelName.IsEqual(ChapterOneLevelName, ENameCase::IgnoreCase))
+	{
+		return;
+	}
+
+	if (ChapterOneDirector && ChapterOneDirector->GetWorld() == LoadedWorld && !ChapterOneDirector->IsActorBeingDestroyed())
+	{
+		return;
+	}
+
+	ChapterOneDirector = nullptr;
+	LoadedWorld->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &UKumaGameInstance::SpawnChapterOneDirector, LoadedWorld));
+}
+
+void UKumaGameInstance::SpawnChapterOneDirector(UWorld* LoadedWorld)
+{
+	if (!LoadedWorld || !LoadedWorld->IsGameWorld() || (ChapterOneDirector && !ChapterOneDirector->IsActorBeingDestroyed()))
+	{
+		return;
+	}
+
+	SetChapterOnlyModelsVisible(LoadedWorld, false);
+	ChapterOneDirector = LoadedWorld->SpawnActor<AKumaChapterOneDirector>();
+	if (!ChapterOneDirector)
+	{
+		UE_LOG(LogKumaSave, Error, TEXT("Failed to spawn the Chapter 1 director in level %s."), *LoadedWorld->GetMapName());
+	}
 }

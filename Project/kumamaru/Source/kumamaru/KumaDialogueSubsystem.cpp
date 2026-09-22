@@ -44,6 +44,7 @@ void UKumaDialogueSubsystem::Deinitialize()
 	bDialogueActive = false;
 	bDialogueVisible = false;
 	bLineTextCompleted = false;
+	RegisteredDialogueWidget.Reset();
 
 	Super::Deinitialize();
 }
@@ -91,6 +92,7 @@ bool UKumaDialogueSubsystem::PlayDialogueSequence(FName OwnerId, const TArray<FK
 	bLineTextCompleted = false;
 	bDialogueVisible = true;
 	SetDialogueWidgetsVisible(true);
+	UE_LOG(LogKumaDialogue, Log, TEXT("[KumaDialogue] Started sequence. Owner=%s Lines=%d RegisteredWidget=%s"), *OwnerId.ToString(), ActiveLines.Num(), RegisteredDialogueWidget.IsValid() ? *RegisteredDialogueWidget->GetName() : TEXT("None"));
 
 	return StartLine(0);
 }
@@ -195,6 +197,7 @@ bool UKumaDialogueSubsystem::StartLine(int32 LineIndex)
 
 	const FKumaDialogueLine& DialogueLine = ActiveLines[ActiveLineIndex];
 	LastCompletedLineId = DialogueLine.LineId;
+	UE_LOG(LogKumaDialogue, Log, TEXT("[KumaDialogue] Started line. Owner=%s Line=%s Speaker=%s"), *ActiveOwnerId.ToString(), *DialogueLine.LineId.ToString(), *DialogueLine.SpeakerId.ToString());
 	OnDialogueLineStarted.Broadcast(DialogueLine.LineId, DialogueLine.SpeakerId, DialogueLine.Text);
 
 	if (!TypingComponent)
@@ -344,6 +347,28 @@ void UKumaDialogueSubsystem::HandleTypingCompleted()
 	}
 }
 
+void UKumaDialogueSubsystem::RegisterDialogueWidget(UUserWidget* Widget)
+{
+	if (!IsValid(Widget))
+	{
+		UE_LOG(LogKumaDialogue, Warning, TEXT("[KumaDialogue] Ignored an invalid dialogue widget registration."));
+		return;
+	}
+
+	RegisteredDialogueWidget = Widget;
+	Widget->SetVisibility(bDialogueVisible ? ESlateVisibility::HitTestInvisible : ESlateVisibility::Collapsed);
+	UE_LOG(LogKumaDialogue, Log, TEXT("[KumaDialogue] Registered dialogue widget. Widget=%s Visible=%s"), *Widget->GetName(), bDialogueVisible ? TEXT("true") : TEXT("false"));
+}
+
+void UKumaDialogueSubsystem::UnregisterDialogueWidget(UUserWidget* Widget)
+{
+	if (RegisteredDialogueWidget.Get() == Widget)
+	{
+		UE_LOG(LogKumaDialogue, Log, TEXT("[KumaDialogue] Unregistered dialogue widget. Widget=%s"), IsValid(Widget) ? *Widget->GetName() : TEXT("None"));
+		RegisteredDialogueWidget.Reset();
+	}
+}
+
 void UKumaDialogueSubsystem::SetDialogueWidgetsVisible(bool bVisible) const
 {
 	UWorld* World = GetWorld();
@@ -353,6 +378,14 @@ void UKumaDialogueSubsystem::SetDialogueWidgetsVisible(bool bVisible) const
 	}
 
 	const ESlateVisibility TargetVisibility = bVisible ? ESlateVisibility::Visible : ESlateVisibility::Collapsed;
+	if (UUserWidget* RegisteredWidget = RegisteredDialogueWidget.Get())
+	{
+		if (RegisteredWidget->GetWorld() == World)
+		{
+			RegisteredWidget->SetVisibility(TargetVisibility);
+			return;
+		}
+	}
 
 	for (TObjectIterator<UUserWidget> It; It; ++It)
 	{

@@ -29,6 +29,11 @@ class KUMAMARU_API AAMPPlayerCharacter : public ACharacter
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
+
+	// The exact world position seen when C_Test starts.  MiniGame 0 restores this
+	// point and rotates in place, instead of orbiting around the character root.
+	FVector LevelStartCameraLocation = FVector::ZeroVector;
+	bool bHasLevelStartCameraLocation = false;
 	
 	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
@@ -66,6 +71,8 @@ protected:
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
+	void HandleMiniGameLookYaw(float Value);
+	void HandleMiniGameLookPitch(float Value);
 			
 
 protected:
@@ -84,5 +91,6 @@ public:
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 	FORCEINLINE class UKumaInputRouterComponent* GetInputRouter() const { return InputRouter; }
+	void SetMiniGameLookCameraEnabled(bool bEnabled);
 
 };
