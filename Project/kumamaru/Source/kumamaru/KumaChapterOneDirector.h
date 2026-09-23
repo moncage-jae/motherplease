@@ -19,6 +19,7 @@ class UMediaPlayer;
 class UFileMediaSource;
 class UMaterialInterface;
 class UStaticMeshComponent;
+class USoundBase;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FKumaChapterOneReadyForMiniGame0);
 
@@ -107,6 +108,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Kuma Chapter 1|Assets")
 	TSoftObjectPtr<UMaterialInterface> TVVideoMaterialAsset;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Kuma Chapter 1|Audio")
+	TSoftObjectPtr<USoundBase> BirdSound;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Kuma Chapter 1|Timing", meta = (ClampMin = "0.0"))
 	float IntroHoldSeconds = 1.5f;

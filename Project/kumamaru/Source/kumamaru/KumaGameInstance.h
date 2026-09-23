@@ -9,6 +9,9 @@
 class UKumaSaveGame;
 class AKumaChapterOneDirector;
 class AKumaChapterTwoDirector;
+class UAudioComponent;
+class USoundBase;
+class UWorld;
 
 UCLASS(Config = Game)
 class KUMAMARU_API UKumaGameInstance : public UGameInstance
@@ -43,6 +46,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Kuma Chapter")
 	void OpenChapterTwo();
 
+	/** Starts the looping ambience for either playable chapter. */
+	void StartChapterAmbience(UWorld* World);
+
+	/** Stops the chapter ambience when that chapter's mini-game is cleared. */
+	void StopChapterAmbience();
+
 protected:
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Kuma Chapter 1")
 	bool bAutoStartChapterOne = true;
@@ -68,6 +77,17 @@ private:
 
 	UPROPERTY(Transient)
 	TObjectPtr<AKumaChapterTwoDirector> ChapterTwoDirector;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Kuma Audio")
+	TSoftObjectPtr<USoundBase> ChapterAmbienceSound = TSoftObjectPtr<USoundBase>(FSoftObjectPath(TEXT("/Game/Audio/ambience.ambience")));
+
+	UPROPERTY(Transient)
+	TObjectPtr<UAudioComponent> ChapterAmbienceAudioComponent;
+
+	bool bChapterAmbienceShouldLoop = false;
+
+	UFUNCTION()
+	void HandleChapterAmbienceFinished();
 
 	void CaptureWorldState(UKumaSaveGame* SaveGameObject) const;
 	bool ApplyWorldState(const UKumaSaveGame* SaveGameObject) const;

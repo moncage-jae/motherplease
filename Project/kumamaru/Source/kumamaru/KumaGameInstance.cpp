@@ -7,6 +7,7 @@
 #include "KumaChapterIntroWidget.h"
 #include "KumaSaveGame.h"
 #include "KumaStoryFlowSubsystem.h"
+#include "Components/AudioComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
@@ -16,6 +17,7 @@
 #include "GameFramework/Controller.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
+#include "Sound/SoundBase.h"
 #include "TimerManager.h"
 #include "UObject/UObjectGlobals.h"
 
@@ -85,6 +87,7 @@ void UKumaGameInstance::Init()
 
 void UKumaGameInstance::Shutdown()
 {
+	StopChapterAmbience();
 	FCoreUObjectDelegates::PostLoadMapWithWorld.RemoveAll(this);
 
 	Super::Shutdown();
@@ -280,10 +283,59 @@ void UKumaGameInstance::OpenChapterTwo()
 	UGameplayStatics::OpenLevel(this, ChapterOneLevelName);
 }
 
+void UKumaGameInstance::StartChapterAmbience(UWorld* World)
+{
+	StopChapterAmbience();
+	if (!World)
+	{
+		return;
+	}
+
+	USoundBase* AmbienceSound = ChapterAmbienceSound.LoadSynchronous();
+	if (!AmbienceSound)
+	{
+		UE_LOG(LogKumaSave, Warning, TEXT("[KumaAudio] Could not load chapter ambience: %s"), *ChapterAmbienceSound.ToSoftObjectPath().ToString());
+		return;
+	}
+
+	bChapterAmbienceShouldLoop = true;
+	ChapterAmbienceAudioComponent = UGameplayStatics::SpawnSound2D(World, AmbienceSound, 1.f, 1.f, 0.f, nullptr, false, false);
+	if (!ChapterAmbienceAudioComponent)
+	{
+		bChapterAmbienceShouldLoop = false;
+		UE_LOG(LogKumaSave, Warning, TEXT("[KumaAudio] Could not create the chapter ambience audio component."));
+		return;
+	}
+
+	ChapterAmbienceAudioComponent->OnAudioFinished.AddDynamic(this, &UKumaGameInstance::HandleChapterAmbienceFinished);
+	UE_LOG(LogKumaSave, Log, TEXT("[KumaAudio] Chapter ambience started and will loop until the mini-game is cleared."));
+}
+
+void UKumaGameInstance::StopChapterAmbience()
+{
+	bChapterAmbienceShouldLoop = false;
+	if (ChapterAmbienceAudioComponent)
+	{
+		ChapterAmbienceAudioComponent->OnAudioFinished.RemoveDynamic(this, &UKumaGameInstance::HandleChapterAmbienceFinished);
+		ChapterAmbienceAudioComponent->Stop();
+		ChapterAmbienceAudioComponent = nullptr;
+		UE_LOG(LogKumaSave, Log, TEXT("[KumaAudio] Chapter ambience stopped."));
+	}
+}
+
+void UKumaGameInstance::HandleChapterAmbienceFinished()
+{
+	if (bChapterAmbienceShouldLoop && ChapterAmbienceAudioComponent)
+	{
+		ChapterAmbienceAudioComponent->Play(0.f);
+	}
+}
+
 void UKumaGameInstance::ShowChapterTwoIntro(UWorld* LoadedWorld)
 {
 	if (!LoadedWorld) return;
 	SetChapterOnlyModelsVisible(LoadedWorld, true);
+	StartChapterAmbience(LoadedWorld);
 	ChapterTwoDirector = LoadedWorld->SpawnActor<AKumaChapterTwoDirector>();
 	if (!ChapterTwoDirector)
 	{
@@ -303,7 +355,7 @@ void UKumaGameInstance::ShowChapterTwoIntro(UWorld* LoadedWorld)
 		ChapterTwoDirector->StartChapterTwo();
 		return;
 	}
-	Intro->SetTitle(FText::FromString(TEXT("CHAPTER 2\nMother, Please")));
+	Intro->SetChapterInfo(FText::FromString(TEXT("CHAPTER 2")), FText::FromString(TEXT("Mother, Please")));
 	Intro->OnIntroFinished.AddUObject(ChapterTwoDirector, &AKumaChapterTwoDirector::StartChapterTwo);
 	Intro->AddToViewport(100);
 	Intro->PlayIntro(1.5f, 1.5f);
@@ -350,6 +402,7 @@ void UKumaGameInstance::SpawnChapterOneDirector(UWorld* LoadedWorld)
 	}
 
 	SetChapterOnlyModelsVisible(LoadedWorld, false);
+	StartChapterAmbience(LoadedWorld);
 	ChapterOneDirector = LoadedWorld->SpawnActor<AKumaChapterOneDirector>();
 	if (!ChapterOneDirector)
 	{

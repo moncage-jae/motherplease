@@ -3,6 +3,7 @@
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
 #include "Components/TextBlock.h"
+#include "Engine/Font.h"
 #include "Engine/World.h"
 
 void UKumaMiniGame0Widget::NativeOnInitialized()
@@ -30,10 +31,13 @@ void UKumaMiniGame0Widget::BuildLayout()
 	CrosshairSlot->SetAnchors(FAnchors(0.5f, 0.5f)); CrosshairSlot->SetAlignment(FVector2D(0.5f, 0.5f)); CrosshairSlot->SetAutoSize(true);
 	InstructionText = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass(), TEXT("Instruction"));
 	InstructionText->SetText(FText::FromString(TEXT("화면을 드래그해 나비를 찾으세요")));
-	FSlateFontInfo InstructionFont = InstructionText->GetFont(); InstructionFont.Size = 28; InstructionText->SetFont(InstructionFont);
+	UFont* SBAggroFont = LoadObject<UFont>(nullptr, TEXT("/Game/UI/Fonts/SB_Aggro_M_Font.SB_Aggro_M_Font"));
+	if (!SBAggroFont) UE_LOG(LogTemp, Warning, TEXT("[KumaMiniGame0] Could not load SB Aggro font. Using the engine default font."));
+	InstructionText->SetFont(FSlateFontInfo(SBAggroFont, 60));
+	InstructionText->SetJustification(ETextJustify::Center);
 	InstructionText->SetColorAndOpacity(FSlateColor(FLinearColor::White)); InstructionText->SetShadowColorAndOpacity(FLinearColor::Black); InstructionText->SetShadowOffset(FVector2D(2.f, 2.f));
 	UCanvasPanelSlot* InstructionSlot = Root->AddChildToCanvas(InstructionText);
-	InstructionSlot->SetAnchors(FAnchors(0.5f, 0.78f)); InstructionSlot->SetAlignment(FVector2D(0.5f, 0.5f)); InstructionSlot->SetAutoSize(true);
+	InstructionSlot->SetAnchors(FAnchors(0.5f, 0.5f)); InstructionSlot->SetAlignment(FVector2D(0.5f, 0.5f)); InstructionSlot->SetAutoSize(true);
 }
 
 void UKumaMiniGame0Widget::BeginMiniGame()

@@ -10,6 +10,8 @@
 class ULevelSequence;
 class ULevelSequencePlayer;
 class ALevelSequenceActor;
+class UAudioComponent;
+class USoundBase;
 class UKumaDialogueBoxWidget;
 class UKumaChapterEndWidget;
 class UKumaInputRouterComponent;
@@ -82,6 +84,8 @@ private:
 	bool IsMiniGame1ButtonInteractionAvailable() const;
 	void TriggerMiniGame1Shake() const;
 	void ShowChapterEndMenu();
+	void StartMiniGame1Sound();
+	void StopMiniGame1Sound();
 
 	void CreateDialogueWidget();
 	void SetPlayerArmInputEnabled(bool bEnabled) const;
@@ -106,6 +110,12 @@ private:
 
 	UFUNCTION()
 	void HandleDialogueSequenceFinished(FName OwnerId, FName LastLineId);
+
+	UFUNCTION()
+	void HandleDialogueLineStarted(FName LineId, FName SpeakerId, const FText& FullText);
+
+	UFUNCTION()
+	void HandleMiniGame1SoundFinished();
 
 	UFUNCTION()
 	void HandleMotherEnterSequenceFinished();
@@ -139,6 +149,13 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Kuma Chapter 2|Assets")
 	TSoftObjectPtr<ULevelSequence> MotherMiniGame1EndSequence;
+
+	/** Plays once with Chapter 2's first narration after the title card fades away. */
+	UPROPERTY(EditDefaultsOnly, Category = "Kuma Chapter 2|Audio")
+	TSoftObjectPtr<USoundBase> WorkerSound;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Kuma Chapter 2|Audio")
+	TSoftObjectPtr<USoundBase> MiniGame1Sound;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Kuma Chapter 2|Timing", meta = (ClampMin = "0.0"))
 	float TypingCharactersPerSecond = 30.f;
@@ -188,7 +205,11 @@ private:
 	UPROPERTY(Transient)
 	TObjectPtr<UKumaInputRouterComponent> MiniGame1InputRouter;
 
+	UPROPERTY(Transient)
+	TObjectPtr<UAudioComponent> MiniGame1AudioComponent;
+
 	bool bHasStarted = false;
+	bool bMiniGame1SoundShouldLoop = false;
 	bool bHasFinished = false;
 	bool bMotherMachineSequenceFinished = false;
 	bool bMotherMachineDialogueFinished = false;

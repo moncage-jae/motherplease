@@ -470,13 +470,6 @@ void UKumaStartScreenWidget::ShowSaveResetWarningPopup()
 
 void UKumaStartScreenWidget::OpenGameplayLevel()
 {
-	// Temporary development shortcut: restore the Chapter 1 OpenLevel call here later.
-	if (UKumaGameInstance* KumaGameInstance = GetGameInstance<UKumaGameInstance>())
-	{
-		KumaGameInstance->OpenChapterTwo();
-		return;
-	}
-
 	if (GameplayLevelName.IsNone())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[KumaStartScreen] GameplayLevelName is empty."));

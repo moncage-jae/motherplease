@@ -4,6 +4,7 @@
 
 #include "AMPPlayerCharacter.h"
 #include "ArmControlComponent.h"
+#include "Components/AudioComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/GameInstance.h"
@@ -15,6 +16,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "KumaChapterEndWidget.h"
+#include "KumaGameInstance.h"
 #include "KumaDialogueBoxWidget.h"
 #include "KumaInputRouterComponent.h"
 #include "KumaMiniGame1CameraShake.h"
@@ -27,6 +29,7 @@
 #include "Misc/Parse.h"
 #include "MovieScene.h"
 #include "MovieSceneObjectBindingID.h"
+#include "Sound/SoundBase.h"
 #include "TimerManager.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogKumaChapterTwo, Log, All);
@@ -44,6 +47,7 @@ namespace KumaChapterTwo
 	const FName MiniGame1SecondMove(TEXT("CH02_MG1_SECOND_MOVE"));
 	const FName MiniGame1Success(TEXT("CH02_MG1_SUCCESS"));
 	const FName MiniGame1Failure(TEXT("CH02_MG1_FAILURE"));
+	const FName MiniGame1SoundStart(TEXT("CH02_HEAT_05"));
 
 	const FName Tomas(TEXT("tomas"));
 	const FName Hank(TEXT("hank"));
@@ -147,6 +151,8 @@ AKumaChapterTwoDirector::AKumaChapterTwoDirector()
 	MotherMachineSequence = TSoftObjectPtr<ULevelSequence>(FSoftObjectPath(TEXT("/Game/Characters/Mother_ANI/playmachine1.playmachine1")));
 	MotherExitSequence = TSoftObjectPtr<ULevelSequence>(FSoftObjectPath(TEXT("/Game/Characters/Mother_ANI/goout.goout")));
 	MotherMiniGame1EndSequence = TSoftObjectPtr<ULevelSequence>(FSoftObjectPath(TEXT("/Game/Characters/Mother_ANI/minigame1end1.minigame1end1")));
+	WorkerSound = TSoftObjectPtr<USoundBase>(FSoftObjectPath(TEXT("/Game/Audio/worker.worker")));
+	MiniGame1Sound = TSoftObjectPtr<USoundBase>(FSoftObjectPath(TEXT("/Game/Audio/minigame1.minigame1")));
 }
 
 void AKumaChapterTwoDirector::BeginPlay()
@@ -156,6 +162,7 @@ void AKumaChapterTwoDirector::BeginPlay()
 	if (UKumaDialogueSubsystem* DialogueSubsystem = GetDialogueSubsystem())
 	{
 		DialogueSubsystem->OnDialogueSequenceFinished.AddDynamic(this, &AKumaChapterTwoDirector::HandleDialogueSequenceFinished);
+		DialogueSubsystem->OnDialogueLineStarted.AddDynamic(this, &AKumaChapterTwoDirector::HandleDialogueLineStarted);
 	}
 }
 
@@ -164,7 +171,9 @@ void AKumaChapterTwoDirector::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	if (UKumaDialogueSubsystem* DialogueSubsystem = GetDialogueSubsystem())
 	{
 		DialogueSubsystem->OnDialogueSequenceFinished.RemoveDynamic(this, &AKumaChapterTwoDirector::HandleDialogueSequenceFinished);
+		DialogueSubsystem->OnDialogueLineStarted.RemoveDynamic(this, &AKumaChapterTwoDirector::HandleDialogueLineStarted);
 	}
+	StopMiniGame1Sound();
 
 	if (HankSequencePlayer) HankSequencePlayer->Stop();
 	if (MotherEnterSequencePlayer)
@@ -254,6 +263,15 @@ void AKumaChapterTwoDirector::StartChapterTwo()
 
 void AKumaChapterTwoDirector::StartOpeningNarration()
 {
+	if (USoundBase* Worker = WorkerSound.LoadSynchronous())
+	{
+		UGameplayStatics::PlaySound2D(this, Worker);
+	}
+	else
+	{
+		UE_LOG(LogKumaChapterTwo, Warning, TEXT("[KumaChapterTwo] Could not load the Chapter 2 worker sound: %s"), *WorkerSound.ToSoftObjectPath().ToString());
+	}
+
 	PlayDialogue(KumaChapterTwo::Opening, BuildOpeningDialogue());
 }
 
@@ -474,6 +492,11 @@ void AKumaChapterTwoDirector::BeginMiniGame1ButtonCountdown()
 
 void AKumaChapterTwoDirector::StartMiniGame1Success()
 {
+	StopMiniGame1Sound();
+	if (UKumaGameInstance* GameInstance = GetGameInstance<UKumaGameInstance>())
+	{
+		GameInstance->StopChapterAmbience();
+	}
 	SetPlayerArmInputEnabled(false);
 	MiniGame1Phase = EKumaMiniGame1Phase::SuccessSequence;
 	if (MiniGame1Widget)
@@ -502,6 +525,7 @@ void AKumaChapterTwoDirector::StartMiniGame1SuccessDialogue()
 
 void AKumaChapterTwoDirector::StartMiniGame1Failure()
 {
+	StopMiniGame1Sound();
 	SetPlayerArmInputEnabled(false);
 	MiniGame1Phase = EKumaMiniGame1Phase::FailureDialogue;
 	if (MiniGame1Widget)
@@ -515,6 +539,7 @@ void AKumaChapterTwoDirector::StartMiniGame1Failure()
 
 void AKumaChapterTwoDirector::RestartMiniGame1()
 {
+	StartMiniGame1Sound();
 	StartMiniGame1();
 }
 
@@ -714,6 +739,49 @@ void AKumaChapterTwoDirector::ShowChapterEndMenu()
 	});
 
 	UE_LOG(LogKumaChapterTwo, Log, TEXT("[KumaChapterTwo] Chapter 2 end menu opened. Buttons=main menu, exit."));
+}
+
+void AKumaChapterTwoDirector::StartMiniGame1Sound()
+{
+	StopMiniGame1Sound();
+	USoundBase* Sound = MiniGame1Sound.LoadSynchronous();
+	if (!Sound)
+	{
+		UE_LOG(LogKumaChapterTwo, Warning, TEXT("[KumaChapterTwo] Could not load MiniGame 1 sound: %s"), *MiniGame1Sound.ToSoftObjectPath().ToString());
+		return;
+	}
+
+	bMiniGame1SoundShouldLoop = true;
+	MiniGame1AudioComponent = UGameplayStatics::SpawnSound2D(this, Sound, 1.f, 1.f, 0.f, nullptr, false, false);
+	if (!MiniGame1AudioComponent)
+	{
+		bMiniGame1SoundShouldLoop = false;
+		UE_LOG(LogKumaChapterTwo, Warning, TEXT("[KumaChapterTwo] Could not create the MiniGame 1 audio component."));
+		return;
+	}
+
+	MiniGame1AudioComponent->OnAudioFinished.AddDynamic(this, &AKumaChapterTwoDirector::HandleMiniGame1SoundFinished);
+	UE_LOG(LogKumaChapterTwo, Log, TEXT("[KumaChapterTwo] MiniGame 1 sound started and is looping."));
+}
+
+void AKumaChapterTwoDirector::StopMiniGame1Sound()
+{
+	bMiniGame1SoundShouldLoop = false;
+	if (MiniGame1AudioComponent)
+	{
+		MiniGame1AudioComponent->OnAudioFinished.RemoveDynamic(this, &AKumaChapterTwoDirector::HandleMiniGame1SoundFinished);
+		MiniGame1AudioComponent->Stop();
+		MiniGame1AudioComponent = nullptr;
+		UE_LOG(LogKumaChapterTwo, Log, TEXT("[KumaChapterTwo] MiniGame 1 sound stopped."));
+	}
+}
+
+void AKumaChapterTwoDirector::HandleMiniGame1SoundFinished()
+{
+	if (bMiniGame1SoundShouldLoop && MiniGame1AudioComponent)
+	{
+		MiniGame1AudioComponent->Play(0.f);
+	}
 }
 
 void AKumaChapterTwoDirector::CreateDialogueWidget()
@@ -1065,6 +1133,14 @@ void AKumaChapterTwoDirector::HandleDialogueSequenceFinished(FName OwnerId, FNam
 		{
 			World->GetTimerManager().SetTimer(MiniGame1RestartTimer, this, &AKumaChapterTwoDirector::RestartMiniGame1, 0.85f, false);
 		}
+	}
+}
+
+void AKumaChapterTwoDirector::HandleDialogueLineStarted(FName LineId, FName SpeakerId, const FText& FullText)
+{
+	if (LineId == KumaChapterTwo::MiniGame1SoundStart)
+	{
+		StartMiniGame1Sound();
 	}
 }
 

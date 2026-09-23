@@ -25,6 +25,7 @@
 #include "MediaPlayer.h"
 #include "FileMediaSource.h"
 #include "Materials/MaterialInterface.h"
+#include "Sound/SoundBase.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogKumaChapterOne, Log, All);
 
@@ -56,6 +57,7 @@ AKumaChapterOneDirector::AKumaChapterOneDirector()
 	TVMediaPlayerAsset = TSoftObjectPtr<UMediaPlayer>(FSoftObjectPath(TEXT("/Game/Test/video_test/NewMediaPlayer.NewMediaPlayer")));
 	TVMediaSourceAsset = TSoftObjectPtr<UFileMediaSource>(FSoftObjectPath(TEXT("/Game/Test/video_test/vid1.vid1")));
 	TVVideoMaterialAsset = TSoftObjectPtr<UMaterialInterface>(FSoftObjectPath(TEXT("/Game/Test/video_test/NewMediaPlayer_Video_Mat.NewMediaPlayer_Video_Mat")));
+	BirdSound = TSoftObjectPtr<USoundBase>(FSoftObjectPath(TEXT("/Game/Audio/bird.bird")));
 	ButterflySequences[0] = TSoftObjectPtr<ULevelSequence>(FSoftObjectPath(TEXT("/Game/Test/Butter_Fly_Sequence/ButterFly.ButterFly")));
 	ButterflySequences[1] = TSoftObjectPtr<ULevelSequence>(FSoftObjectPath(TEXT("/Game/Test/Butter_Fly_Sequence/ButterFly1.ButterFly1")));
 	ButterflySequences[2] = TSoftObjectPtr<ULevelSequence>(FSoftObjectPath(TEXT("/Game/Test/Butter_Fly_Sequence/ButterFly2.ButterFly2")));
@@ -162,6 +164,10 @@ void AKumaChapterOneDirector::StartChapterOne()
 
 void AKumaChapterOneDirector::StartRoomNarration()
 {
+	if (USoundBase* Bird = BirdSound.LoadSynchronous())
+	{
+		UGameplayStatics::PlaySound2D(this, Bird);
+	}
 	PlayDialogue(KumaChapterOne::RoomNarration, BuildRoomNarration());
 }
 
@@ -392,6 +398,7 @@ void AKumaChapterOneDirector::CreateChapterIntroWidget()
 		return;
 	}
 
+	ChapterIntroWidget->SetChapterInfo(FText::FromString(TEXT("CHAPTER 1")), FText::FromString(TEXT("My Home")));
 	ChapterIntroWidget->OnIntroFinished.AddUObject(this, &AKumaChapterOneDirector::StartRoomNarration);
 	ChapterIntroWidget->AddToViewport(100);
 	ChapterIntroWidget->PlayIntro(IntroHoldSeconds, IntroFadeSeconds);
@@ -717,6 +724,10 @@ void AKumaChapterOneDirector::HandleButterflyFound()
 	}
 	else
 	{
+		if (UKumaGameInstance* GameInstance = GetGameInstance<UKumaGameInstance>())
+		{
+			GameInstance->StopChapterAmbience();
+		}
 		ScheduleTVVideoAfterFinalButterfly();
 		PlayTVSequence();
 	}

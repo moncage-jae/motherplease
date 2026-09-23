@@ -4,10 +4,14 @@
 
 #include "Blueprint/WidgetTree.h"
 #include "Brushes/SlateColorBrush.h"
+#include "Components/AudioComponent.h"
 #include "Components/Border.h"
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
 #include "Components/TextBlock.h"
+#include "Engine/Font.h"
+#include "Kismet/GameplayStatics.h"
+#include "Sound/SoundBase.h"
 
 void UKumaChapterIntroWidget::NativeOnInitialized()
 {
@@ -24,9 +28,16 @@ void UKumaChapterIntroWidget::NativeConstruct()
 	SetRenderOpacity(1.f);
 }
 
-void UKumaChapterIntroWidget::SetTitle(const FText& InTitle)
+void UKumaChapterIntroWidget::SetChapterInfo(const FText& InChapterNumber, const FText& InChapterTitle)
 {
-	if (ChapterTitleText) ChapterTitleText->SetText(InTitle);
+	if (ChapterNumberText)
+	{
+		ChapterNumberText->SetText(InChapterNumber);
+	}
+	if (ChapterNameText)
+	{
+		ChapterNameText->SetText(InChapterTitle);
+	}
 }
 
 void UKumaChapterIntroWidget::NativeDestruct()
@@ -37,6 +48,7 @@ void UKumaChapterIntroWidget::NativeDestruct()
 	}
 
 	bIsPlaying = false;
+	StopChapterIntroSound();
 
 	Super::NativeDestruct();
 }
@@ -49,9 +61,28 @@ void UKumaChapterIntroWidget::PlayIntro(float InHoldSeconds, float InFadeSeconds
 	bIsPlaying = true;
 	SetRenderOpacity(1.f);
 
+	if (USoundBase* Sound = ChapterIntroSound.LoadSynchronous())
+	{
+		StopChapterIntroSound();
+		ChapterIntroAudioComponent = UGameplayStatics::SpawnSound2D(this, Sound, 1.f, 1.f, 0.f, nullptr, false, false);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[KumaChapterIntro] Could not load the chapter intro sound: %s"), *ChapterIntroSound.ToSoftObjectPath().ToString());
+	}
+
 	if (UWorld* World = GetWorld())
 	{
 		World->GetTimerManager().SetTimer(FadeTimerHandle, this, &UKumaChapterIntroWidget::UpdateFade, 1.f / 60.f, true);
+	}
+}
+
+void UKumaChapterIntroWidget::StopChapterIntroSound()
+{
+	if (ChapterIntroAudioComponent)
+	{
+		ChapterIntroAudioComponent->Stop();
+		ChapterIntroAudioComponent = nullptr;
 	}
 }
 
@@ -83,6 +114,7 @@ void UKumaChapterIntroWidget::UpdateFade()
 	}
 
 	bIsPlaying = false;
+	StopChapterIntroSound();
 	RemoveFromParent();
 	OnIntroFinished.Broadcast();
 }
@@ -103,13 +135,33 @@ void UKumaChapterIntroWidget::BuildLayout()
 	BlackoutSlot->SetAnchors(FAnchors(0.f, 0.f, 1.f, 1.f));
 	BlackoutSlot->SetOffsets(FMargin(0.f));
 
-	ChapterTitleText = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass(), TEXT("ChapterTitleText"));
-	ChapterTitleText->SetText(FText::FromString(TEXT("CHAPTER 1\nMy Home")));
-	ChapterTitleText->SetJustification(ETextJustify::Center);
-	ChapterTitleText->SetColorAndOpacity(FSlateColor(FLinearColor::White));
+	UFont* SBAggroFont = LoadObject<UFont>(nullptr, TEXT("/Game/UI/Fonts/SB_Aggro_M_Font.SB_Aggro_M_Font"));
+	if (!SBAggroFont)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[KumaChapterIntro] Could not load SB Aggro font. Using the engine default font."));
+	}
 
-	UCanvasPanelSlot* TitleSlot = RootPanel->AddChildToCanvas(ChapterTitleText);
-	TitleSlot->SetAnchors(FAnchors(0.5f, 0.5f));
-	TitleSlot->SetAlignment(FVector2D(0.5f, 0.5f));
-	TitleSlot->SetAutoSize(true);
+	ChapterNumberText = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass(), TEXT("ChapterNumberText"));
+	ChapterNumberText->SetText(FText::FromString(TEXT("CHAPTER 1")));
+	ChapterNumberText->SetJustification(ETextJustify::Center);
+	ChapterNumberText->SetColorAndOpacity(FSlateColor(FLinearColor::White));
+	ChapterNumberText->SetFont(FSlateFontInfo(SBAggroFont, 60));
+
+	UCanvasPanelSlot* NumberSlot = RootPanel->AddChildToCanvas(ChapterNumberText);
+	NumberSlot->SetAnchors(FAnchors(0.5f, 0.5f));
+	NumberSlot->SetAlignment(FVector2D(0.5f, 1.f));
+	NumberSlot->SetPosition(FVector2D(0.f, -4.f));
+	NumberSlot->SetAutoSize(true);
+
+	ChapterNameText = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass(), TEXT("ChapterNameText"));
+	ChapterNameText->SetText(FText::FromString(TEXT("My Home")));
+	ChapterNameText->SetJustification(ETextJustify::Center);
+	ChapterNameText->SetColorAndOpacity(FSlateColor(FLinearColor::White));
+	ChapterNameText->SetFont(FSlateFontInfo(SBAggroFont, 40));
+
+	UCanvasPanelSlot* NameSlot = RootPanel->AddChildToCanvas(ChapterNameText);
+	NameSlot->SetAnchors(FAnchors(0.5f, 0.5f));
+	NameSlot->SetAlignment(FVector2D(0.5f, 0.f));
+	NameSlot->SetPosition(FVector2D(0.f, 4.f));
+	NameSlot->SetAutoSize(true);
 }

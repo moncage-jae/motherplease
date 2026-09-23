@@ -5,6 +5,7 @@
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
 #include "Components/TextBlock.h"
+#include "Engine/Font.h"
 #include "Engine/World.h"
 #include "TimerManager.h"
 
@@ -65,16 +66,19 @@ void UKumaMiniGame1Widget::BuildLayout()
 	CountdownSlot->SetAutoSize(true);
 
 	InstructionText = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass(), TEXT("Instruction"));
-	FSlateFontInfo InstructionFont = InstructionText->GetFont();
-	InstructionFont.Size = 28;
-	InstructionText->SetFont(InstructionFont);
+	UFont* SBAggroFont = LoadObject<UFont>(nullptr, TEXT("/Game/UI/Fonts/SB_Aggro_M_Font.SB_Aggro_M_Font"));
+	if (!SBAggroFont)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[KumaMiniGame1] Could not load SB Aggro font. Using the engine default font."));
+	}
+	InstructionText->SetFont(FSlateFontInfo(SBAggroFont, 60));
 	InstructionText->SetColorAndOpacity(FSlateColor(FLinearColor::White));
 	InstructionText->SetShadowColorAndOpacity(FLinearColor::Black);
 	InstructionText->SetShadowOffset(FVector2D(2.f, 2.f));
 	InstructionText->SetJustification(ETextJustify::Center);
 	InstructionText->SetVisibility(ESlateVisibility::Collapsed);
 	UCanvasPanelSlot* InstructionSlot = Root->AddChildToCanvas(InstructionText);
-	InstructionSlot->SetAnchors(FAnchors(0.5f, 0.78f));
+	InstructionSlot->SetAnchors(FAnchors(0.5f, 0.5f));
 	InstructionSlot->SetAlignment(FVector2D(0.5f, 0.5f));
 	InstructionSlot->SetAutoSize(true);
 }
